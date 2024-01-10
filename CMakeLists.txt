@@ -50,10 +50,12 @@ set (PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_REL_DIR})
 
 set (src
     src/Mqtt5ClientFilter.cpp
+    src/Mqtt5ClientFilterConfigWidget.cpp
+    src/Mqtt5ClientFilterConfigWidget.ui
     src/Mqtt5ClientFilterPlugin.cpp
 )
 
-add_library (${CMAKE_PROJECT_NAME} MODULE ${src} ${moc})
+add_library (${CMAKE_PROJECT_NAME} MODULE ${src})
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE cc::cc_mqtt5_client cc::cc_tools_qt Qt::Widgets Qt::Core)
 install (
     TARGETS ${CMAKE_PROJECT_NAME}

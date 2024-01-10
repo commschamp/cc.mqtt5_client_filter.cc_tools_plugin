@@ -1,5 +1,5 @@
 //
-// Copyright 2015 - 2024 (C). Alex Robenko. All rights reserved.
+// Copyright 2024 - 2025 (C). Alex Robenko. All rights reserved.
 //
 
 // This file is free software: you can redistribute it and/or modify
@@ -21,9 +21,19 @@
 #include <cassert>
 
 #include "Mqtt5ClientFilter.h"
+#include "Mqtt5ClientFilterConfigWidget.h"
 
 namespace cc_plugin_mqtt5_client_filter
 {
+
+namespace 
+{
+
+const QString MainConfigKey("cc_plugin_mqtt5_client_filter");
+const QString ClientIdSubKey("client_id");
+
+} // namespace 
+    
 
 Mqtt5ClientFilterPlugin::Mqtt5ClientFilterPlugin()
 {
@@ -35,10 +45,45 @@ Mqtt5ClientFilterPlugin::Mqtt5ClientFilterPlugin()
                 cc_tools_qt::PluginProperties::ListOfFilters result;
                 result.append(m_filter);
                 return result;
-            });
+            })
+        .setConfigWidgetCreateFunc(
+            [this]()
+            {
+                createFilterIfNeeded();
+                return new Mqtt5ClientFilterConfigWidget(*m_filter);
+            })            
+        ;
 }
 
 Mqtt5ClientFilterPlugin::~Mqtt5ClientFilterPlugin() noexcept = default;
+
+void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
+{
+    createFilterIfNeeded();
+    assert(m_filter);
+
+    QVariantMap subConfig;
+    subConfig.insert(ClientIdSubKey, m_filter->getClientId());
+    config.insert(MainConfigKey, QVariant::fromValue(subConfig));
+}
+
+void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
+{
+    auto subConfigVar = config.value(MainConfigKey);
+    if ((!subConfigVar.isValid()) || (!subConfigVar.canConvert<QVariantMap>())) {
+        return;
+    }
+
+    createFilterIfNeeded();
+    assert(m_filter);
+
+    auto subConfig = subConfigVar.value<QVariantMap>();
+    auto clientVar = subConfig.value(ClientIdSubKey);
+    if (clientVar.isValid() && clientVar.canConvert<QString>()) {
+        auto val = clientVar.value<QString>();
+        m_filter->setClientId(val);
+    }
+}
 
 void Mqtt5ClientFilterPlugin::createFilterIfNeeded()
 {

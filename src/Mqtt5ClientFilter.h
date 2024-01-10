@@ -1,5 +1,5 @@
 //
-// Copyright 2014 - 2024 (C). Alex Robenko. All rights reserved.
+// Copyright 2024 - 2025 (C). Alex Robenko. All rights reserved.
 //
 
 // This file is free software: you can redistribute it and/or modify
@@ -23,9 +23,11 @@
 #include <cc_mqtt5_client/client.h>
 
 #include <QtCore/QObject>
+#include <QtCore/QString>
 #include <QtCore/QTimer>
 
 #include <list>
+#include <memory>
 
 
 namespace cc_plugin_mqtt5_client_filter
@@ -39,7 +41,21 @@ public:
     Mqtt5ClientFilter();
     ~Mqtt5ClientFilter() noexcept;
 
+    const QString& getClientId() const
+    {
+        return m_clientId;
+    }
+
+    void setClientId(const QString& val)
+    {
+        m_clientId = val;
+    }
+
 protected:
+    virtual bool startImpl() override;
+    //virtual QList<DataInfoPtr> recvDataImpl(DataInfoPtr dataPtr) override;
+    //virtual QList<DataInfoPtr> sendDataImpl(DataInfoPtr dataPtr) override;
+    virtual void socketConnectionReportImpl(bool connected) override;
 
 private slots:
 
@@ -54,15 +70,23 @@ private:
     
     using ClientPtr = std::unique_ptr<CC_Mqtt5Client, ClientDeleter>;
 
+    void sendDataInternal(const unsigned char* buf, unsigned bufLen);
+
+    static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
+
     ClientPtr m_client;
     QTimer m_timer;
     std::list<cc_tools_qt::DataInfoPtr> m_pendingData;
+    QString m_clientId;
+    bool m_firstConnect = true;
 };
 
+using Mqtt5ClientFilterPtr = std::shared_ptr<Mqtt5ClientFilter>;
+
 inline
-cc_tools_qt::FilterPtr makeMqtt5ClientFilter()
+Mqtt5ClientFilterPtr makeMqtt5ClientFilter()
 {
-    return cc_tools_qt::FilterPtr(new Mqtt5ClientFilter());
+    return Mqtt5ClientFilterPtr(new Mqtt5ClientFilter());
 }
 
 }  // namespace cc_plugin_mqtt5_client_filter

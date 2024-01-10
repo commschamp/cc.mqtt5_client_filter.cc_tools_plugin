@@ -15,37 +15,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "Mqtt5ClientFilterConfigWidget.h"
 
-#pragma once
-
-#include "Mqtt5ClientFilter.h"
-
-#include <cc_tools_qt/Plugin.h>
+#include <cassert>
 
 namespace cc_plugin_mqtt5_client_filter
 {
 
-class Mqtt5ClientFilterPlugin : public cc_tools_qt::Plugin
+Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& filter, QWidget* parentObj) :
+    Base(parentObj),
+    m_filter(filter)
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "cc.Mqtt5ClientFilter" FILE "cc_plugin_mqtt5_client_filter.json")
-    Q_INTERFACES(cc_tools_qt::Plugin)
+    m_ui.setupUi(this);
 
-public:
-    Mqtt5ClientFilterPlugin();
-    ~Mqtt5ClientFilterPlugin() noexcept;
+    m_ui.m_clientIdLineEdit->setText(m_filter.getClientId());
 
-protected:
-    virtual void getCurrentConfigImpl(QVariantMap& config) override;
-    virtual void reconfigureImpl(const QVariantMap& config) override;
+    connect(
+        m_ui.m_clientIdLineEdit, &QLineEdit::textChanged,
+        this, &Mqtt5ClientFilterConfigWidget::clientIdUpdated);
+}
 
-private:
-    void createFilterIfNeeded();
-    Mqtt5ClientFilterPtr m_filter;
-};
+Mqtt5ClientFilterConfigWidget::~Mqtt5ClientFilterConfigWidget() noexcept = default;
+
+void Mqtt5ClientFilterConfigWidget::clientIdUpdated(const QString& val)
+{
+    m_filter.setClientId(val);
+}
+
 
 }  // namespace cc_plugin_mqtt5_client_filter
-
-
 
 

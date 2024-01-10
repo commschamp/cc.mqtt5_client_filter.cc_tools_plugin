@@ -18,34 +18,36 @@
 
 #pragma once
 
+#include "ui_Mqtt5ClientFilterConfigWidget.h"
+
 #include "Mqtt5ClientFilter.h"
 
-#include <cc_tools_qt/Plugin.h>
+#include <QtWidgets/QWidget>
+
 
 namespace cc_plugin_mqtt5_client_filter
 {
 
-class Mqtt5ClientFilterPlugin : public cc_tools_qt::Plugin
+class Mqtt5ClientFilterConfigWidget : public QWidget
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "cc.Mqtt5ClientFilter" FILE "cc_plugin_mqtt5_client_filter.json")
-    Q_INTERFACES(cc_tools_qt::Plugin)
+    using Base = QWidget;
 
 public:
-    Mqtt5ClientFilterPlugin();
-    ~Mqtt5ClientFilterPlugin() noexcept;
+    explicit Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& filter, QWidget* parentObj = nullptr);
+    ~Mqtt5ClientFilterConfigWidget() noexcept;
+    Mqtt5ClientFilterConfigWidget(const Mqtt5ClientFilterConfigWidget&) = delete;
 
 protected:
-    virtual void getCurrentConfigImpl(QVariantMap& config) override;
-    virtual void reconfigureImpl(const QVariantMap& config) override;
+
+private slots:
+    void clientIdUpdated(const QString& val);
 
 private:
-    void createFilterIfNeeded();
-    Mqtt5ClientFilterPtr m_filter;
+    Mqtt5ClientFilter& m_filter;
+    Ui::Mqtt5ClientFilterConfigWidget m_ui;
 };
 
 }  // namespace cc_plugin_mqtt5_client_filter
-
-
 
 
