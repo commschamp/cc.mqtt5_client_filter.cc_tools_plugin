@@ -30,6 +30,7 @@ namespace
 {
 
 const QString MainConfigKey("cc_plugin_mqtt5_client_filter");
+const QString RespTimeoutSubKey("resp_timeout");
 const QString ClientIdSubKey("client_id");
 
 } // namespace 
@@ -63,7 +64,8 @@ void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
     assert(m_filter);
 
     QVariantMap subConfig;
-    subConfig.insert(ClientIdSubKey, m_filter->getClientId());
+    subConfig.insert(RespTimeoutSubKey, m_filter->config().m_respTimeout);
+    subConfig.insert(ClientIdSubKey, m_filter->config().m_clientId);
     config.insert(MainConfigKey, QVariant::fromValue(subConfig));
 }
 
@@ -78,10 +80,17 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
     assert(m_filter);
 
     auto subConfig = subConfigVar.value<QVariantMap>();
+
+    auto respTimeoutVar = subConfig.value(RespTimeoutSubKey);
+    if (respTimeoutVar.isValid() && respTimeoutVar.canConvert<unsigned>()) {
+        auto val = respTimeoutVar.value<unsigned>();
+        m_filter->config().m_respTimeout = val;
+    }    
+
     auto clientVar = subConfig.value(ClientIdSubKey);
     if (clientVar.isValid() && clientVar.canConvert<QString>()) {
         auto val = clientVar.value<QString>();
-        m_filter->setClientId(val);
+        m_filter->config().m_clientId = val;
     }
 }
 

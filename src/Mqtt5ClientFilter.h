@@ -22,13 +22,14 @@
 
 #include <cc_mqtt5_client/client.h>
 
+#include <QtCore/QByteArray>
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
 #include <list>
 #include <memory>
-
+#include <string>
 
 namespace cc_plugin_mqtt5_client_filter
 {
@@ -38,26 +39,29 @@ class Mqtt5ClientFilter : public QObject, public cc_tools_qt::Filter
     Q_OBJECT
 
 public:
+    struct Config
+    {
+        unsigned m_respTimeout = 0U;
+        QString m_clientId;
+    };
+
     Mqtt5ClientFilter();
     ~Mqtt5ClientFilter() noexcept;
 
-    const QString& getClientId() const
+    Config& config()
     {
-        return m_clientId;
-    }
-
-    void setClientId(const QString& val)
-    {
-        m_clientId = val;
+        return m_config;
     }
 
 protected:
     virtual bool startImpl() override;
-    //virtual QList<DataInfoPtr> recvDataImpl(DataInfoPtr dataPtr) override;
-    //virtual QList<DataInfoPtr> sendDataImpl(DataInfoPtr dataPtr) override;
+    virtual void stopImpl() override;
+    virtual QList<cc_tools_qt::DataInfoPtr> recvDataImpl(cc_tools_qt::DataInfoPtr dataPtr) override;
+    virtual QList<cc_tools_qt::DataInfoPtr> sendDataImpl(cc_tools_qt::DataInfoPtr dataPtr) override;
     virtual void socketConnectionReportImpl(bool connected) override;
 
 private slots:
+    void doTick();
 
 private:
     struct ClientDeleter
@@ -70,15 +74,38 @@ private:
     
     using ClientPtr = std::unique_ptr<CC_Mqtt5Client, ClientDeleter>;
 
+    void socketConnected();
+    void socketDisconnected();
+
     void sendDataInternal(const unsigned char* buf, unsigned bufLen);
+    void brokerDisconnectedInternal();
+    void messageReceivedInternal(const CC_Mqtt5MessageInfo& info);
+    void nextTickProgramInternal(unsigned ms);
+    unsigned cancelTickProgramInternal();
+    void connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
 
     static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
+    static void brokerDisconnectedCb(void* data, const CC_Mqtt5DisconnectInfo* info);
+    static void messageReceivedCb(void* data, const CC_Mqtt5MessageInfo* info);
+    static void nextTickProgramCb(void* data, unsigned ms);
+    static unsigned cancelTickProgramCb(void* data);
+    static void errorLogCb(void* data, const char* msg);
+    static void connectCompleteCb(void* data, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
 
     ClientPtr m_client;
     QTimer m_timer;
     std::list<cc_tools_qt::DataInfoPtr> m_pendingData;
-    QString m_clientId;
+    cc_tools_qt::DataInfo::DataSeq m_inData;
+    Config m_config;
+    std::string m_prevClientId;
+    unsigned m_tickMs = 0U;
+    qint64 m_tickMeasureTs = 0U;
+    cc_tools_qt::DataInfoPtr m_recvDataPtr;
+    QList<cc_tools_qt::DataInfoPtr> m_recvData;
+    cc_tools_qt::DataInfoPtr m_sendDataPtr;
+    QList<cc_tools_qt::DataInfoPtr> m_sendData;
     bool m_firstConnect = true;
+    bool m_waitingForDisconnect = false;
 };
 
 using Mqtt5ClientFilterPtr = std::shared_ptr<Mqtt5ClientFilter>;

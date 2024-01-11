@@ -41,6 +41,7 @@ public:
 protected:
 
 private slots:
+    void respTimeoutUpdated(int val);
     void clientIdUpdated(const QString& val);
 
 private:

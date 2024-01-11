@@ -28,7 +28,12 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 {
     m_ui.setupUi(this);
 
-    m_ui.m_clientIdLineEdit->setText(m_filter.getClientId());
+    m_ui.m_respTimeoutSpinBox->setValue(m_filter.config().m_respTimeout);
+    m_ui.m_clientIdLineEdit->setText(m_filter.config().m_clientId);
+
+    connect(
+        m_ui.m_respTimeoutSpinBox, qOverload<int>(&QSpinBox::valueChanged),
+        this, &Mqtt5ClientFilterConfigWidget::respTimeoutUpdated);    
 
     connect(
         m_ui.m_clientIdLineEdit, &QLineEdit::textChanged,
@@ -37,9 +42,14 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
 Mqtt5ClientFilterConfigWidget::~Mqtt5ClientFilterConfigWidget() noexcept = default;
 
+void Mqtt5ClientFilterConfigWidget::respTimeoutUpdated(int val)
+{
+    m_filter.config().m_respTimeout = static_cast<unsigned>(val);
+}
+
 void Mqtt5ClientFilterConfigWidget::clientIdUpdated(const QString& val)
 {
-    m_filter.setClientId(val);
+    m_filter.config().m_clientId = val;
 }
 
 
