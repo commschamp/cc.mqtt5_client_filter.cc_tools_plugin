@@ -43,6 +43,8 @@ public:
     {
         unsigned m_respTimeout = 0U;
         QString m_clientId;
+        QString m_pubTopic; // TODO: configure in UI
+        int m_pubQos = 0;
     };
 
     Mqtt5ClientFilter();
@@ -83,6 +85,7 @@ private:
     void nextTickProgramInternal(unsigned ms);
     unsigned cancelTickProgramInternal();
     void connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
+    void publishCompleteInternal(CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response);
 
     static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
     static void brokerDisconnectedCb(void* data, const CC_Mqtt5DisconnectInfo* info);
@@ -91,6 +94,7 @@ private:
     static unsigned cancelTickProgramCb(void* data);
     static void errorLogCb(void* data, const char* msg);
     static void connectCompleteCb(void* data, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
+    static void publishCompleteCb(void* data, CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response);
 
     ClientPtr m_client;
     QTimer m_timer;
