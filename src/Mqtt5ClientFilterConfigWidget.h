@@ -38,11 +38,13 @@ public:
     ~Mqtt5ClientFilterConfigWidget() noexcept;
     Mqtt5ClientFilterConfigWidget(const Mqtt5ClientFilterConfigWidget&) = delete;
 
-protected:
-
 private slots:
     void respTimeoutUpdated(int val);
     void clientIdUpdated(const QString& val);
+    void subTopicsUpdated(const QString& val);
+    void subQosUpdated(int val);
+    void pubTopicUpdated(const QString& val);
+    void pubQosUpdated(int val);
 
 private:
     Mqtt5ClientFilter& m_filter;

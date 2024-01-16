@@ -17,11 +17,12 @@
 
 #include "Mqtt5ClientFilterPlugin.h"
 
-#include <memory>
-#include <cassert>
-
 #include "Mqtt5ClientFilter.h"
 #include "Mqtt5ClientFilterConfigWidget.h"
+
+#include <cassert>
+#include <memory>
+#include <type_traits>
 
 namespace cc_plugin_mqtt5_client_filter
 {
@@ -32,6 +33,21 @@ namespace
 const QString MainConfigKey("cc_plugin_mqtt5_client_filter");
 const QString RespTimeoutSubKey("resp_timeout");
 const QString ClientIdSubKey("client_id");
+const QString SubTopicsSubKey("sub_topics");
+const QString SubQosSubKey("sub_qos");
+const QString PubTopicSubKey("pub_topic");
+const QString PubQosSubKey("pub_qos");
+
+
+template <typename T>
+void getFromConfigMap(const QVariantMap& subConfig, const QString& key, T& val)
+{
+    using Type = std::decay_t<decltype(val)>;
+    auto var = subConfig.value(key);
+    if (var.isValid() && var.canConvert<Type>()) {
+        val = var.value<Type>();
+    }    
+}
 
 } // namespace 
     
@@ -66,6 +82,10 @@ void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
     QVariantMap subConfig;
     subConfig.insert(RespTimeoutSubKey, m_filter->config().m_respTimeout);
     subConfig.insert(ClientIdSubKey, m_filter->config().m_clientId);
+    subConfig.insert(SubTopicsSubKey, m_filter->config().m_subTopics);
+    subConfig.insert(SubQosSubKey, m_filter->config().m_subQos);
+    subConfig.insert(PubTopicSubKey, m_filter->config().m_pubTopic);
+    subConfig.insert(PubQosSubKey, m_filter->config().m_pubQos);
     config.insert(MainConfigKey, QVariant::fromValue(subConfig));
 }
 
@@ -81,17 +101,12 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
 
     auto subConfig = subConfigVar.value<QVariantMap>();
 
-    auto respTimeoutVar = subConfig.value(RespTimeoutSubKey);
-    if (respTimeoutVar.isValid() && respTimeoutVar.canConvert<unsigned>()) {
-        auto val = respTimeoutVar.value<unsigned>();
-        m_filter->config().m_respTimeout = val;
-    }    
-
-    auto clientVar = subConfig.value(ClientIdSubKey);
-    if (clientVar.isValid() && clientVar.canConvert<QString>()) {
-        auto val = clientVar.value<QString>();
-        m_filter->config().m_clientId = val;
-    }
+    getFromConfigMap(subConfig, RespTimeoutSubKey, m_filter->config().m_respTimeout);
+    getFromConfigMap(subConfig, ClientIdSubKey, m_filter->config().m_clientId);
+    getFromConfigMap(subConfig, SubTopicsSubKey, m_filter->config().m_subTopics);
+    getFromConfigMap(subConfig, SubQosSubKey, m_filter->config().m_subQos);
+    getFromConfigMap(subConfig, PubTopicSubKey, m_filter->config().m_pubTopic);
+    getFromConfigMap(subConfig, PubQosSubKey, m_filter->config().m_pubQos);
 }
 
 void Mqtt5ClientFilterPlugin::createFilterIfNeeded()

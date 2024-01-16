@@ -123,11 +123,18 @@ bool Mqtt5ClientFilter::startImpl()
         return false;
     }
 
+    ec = ::cc_mqtt5_client_set_default_response_timeout(m_client.get(), m_config.m_respTimeout);
+    if (ec != CC_Mqtt5ErrorCode_Success) {
+        reportError(tr("Failed to update MQTT5 default response timeout"));
+        return false;
+    }    
+
     return true; 
 }
 
 void Mqtt5ClientFilter::stopImpl()
 {
+    assert(false); // TODO:
     // ???
 }
 
@@ -163,10 +170,16 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     if (props.contains(topicProp())) {
         topic = props[topicProp()].value<QString>().toStdString();
     }
+    else {
+        props[topicProp()] = QString::fromStdString(topic);
+    }
 
     auto qos = m_config.m_pubQos;
     if (props.contains(qosProp())) {
         qos = props[qosProp()].value<int>();
+    }
+    else {
+        props[qosProp()] = qos;
     }
 
     basicConfig.m_topic = topic.c_str();
@@ -206,6 +219,9 @@ void Mqtt5ClientFilter::socketConnectionReportImpl(bool connected)
 
 void Mqtt5ClientFilter::doTick()
 {
+    assert(m_tickMeasureTs > 0);
+    m_tickMeasureTs = 0;
+
     assert(m_client);
     if (!m_client) {
         return;
@@ -253,9 +269,10 @@ void Mqtt5ClientFilter::socketConnected()
     ec = cc_mqtt5_client_connect_send(connect, &Mqtt5ClientFilter::connectCompleteCb, this);
     if (ec != CC_Mqtt5ErrorCode_Success) {
         reportError(tr("Failed to send MQTT5 CONNECT message"));
-        cc_mqtt5_client_connect_cancel(connect);
         return;
     }
+
+    m_prevClientId = clientId;
 }
 
 void Mqtt5ClientFilter::socketDisconnected()
@@ -291,7 +308,6 @@ void Mqtt5ClientFilter::brokerDisconnectedInternal()
 
 void Mqtt5ClientFilter::messageReceivedInternal(const CC_Mqtt5MessageInfo& info)
 {
-    static_cast<void>(info); // TODO;
     assert(m_recvDataPtr);
     auto dataInfo = cc_tools_qt::makeDataInfoTimed();
     if (info.m_dataLen > 0U) {
@@ -345,12 +361,14 @@ void Mqtt5ClientFilter::nextTickProgramInternal(unsigned ms)
 
 unsigned Mqtt5ClientFilter::cancelTickProgramInternal()
 {
+    assert(m_tickMeasureTs > 0);
     assert(m_timer.isActive());
     m_timer.stop();
     auto now = QDateTime::currentMSecsSinceEpoch();
-    assert(m_tickMeasureTs < now);
+    assert(m_tickMeasureTs <= now);
     auto diff = now - m_tickMeasureTs;
     assert(diff < std::numeric_limits<unsigned>::max());
+    m_tickMeasureTs = 0U;
     return static_cast<unsigned>(diff);
 }
 
@@ -367,8 +385,59 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
         return;        
     }
 
-    std::cout << "!!! CONNECTED" << std::endl;
-    // TODO: subscribe
+    m_firstConnect = false;
+
+    if (response->m_sessionPresent) {
+        return;
+    }
+
+    CC_Mqtt5SubscribeHandle subscribe = ::cc_mqtt5_client_subscribe_prepare(m_client.get(), nullptr);
+    if (subscribe == nullptr) {
+        reportError(tr("Failed to allocate SUBSCRIBE message in MQTT5 client"));
+        return;
+    }    
+
+    auto topics = m_config.m_subTopics.split(",");
+    for (auto& t : topics) {
+        auto topicStr = t.trimmed().toStdString();
+
+        auto topicConfig = CC_Mqtt5SubscribeTopicConfig();
+        ::cc_mqtt5_client_subscribe_init_config_topic(&topicConfig);
+        topicConfig.m_topic = topicStr.c_str();
+        topicConfig.m_maxQos = static_cast<decltype(topicConfig.m_maxQos)>(m_config.m_subQos);
+        topicConfig.m_noLocal = true;   
+        // TODO: all config options   
+
+        auto ec = ::cc_mqtt5_client_subscribe_config_topic(subscribe, &topicConfig);
+        if (ec != CC_Mqtt5ErrorCode_Success) {
+            reportError(
+                QString("%1 \"%2\", ec=%3").arg(tr("Failed to configure topic")).arg(t).arg(ec));
+            continue;
+        }  
+    }
+
+    auto ec = cc_mqtt5_client_subscribe_send(subscribe, &Mqtt5ClientFilter::subscribeCompleteCb, this);
+    if (ec != CC_Mqtt5ErrorCode_Success) {
+        reportError(tr("Failed to send MQTT5 SUBSCRIBE message"));
+        return;
+    }    
+}
+
+void Mqtt5ClientFilter::subscribeCompleteInternal([[maybe_unused]] CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response)
+{
+    if (status != CC_Mqtt5AsyncOpStatus_Complete) {
+        reportError(tr("Failed to subsribe to MQTT5 topics, status=") + QString::number(status));
+        return;
+    }  
+
+    assert (response != nullptr);
+    for (auto idx = 0U; idx < response->m_reasonCodesCount; ++idx) {
+        if (response->m_reasonCodes[idx] < CC_Mqtt5ReasonCode_UnspecifiedError) {
+            continue;
+        }
+
+        reportError(tr("MQTT broker rejected subscribe with reasonCode=") + QString::number(response->m_reasonCodes[idx]));
+    }       
 }
 
 void Mqtt5ClientFilter::publishCompleteInternal([[maybe_unused]] CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response)
@@ -378,8 +447,11 @@ void Mqtt5ClientFilter::publishCompleteInternal([[maybe_unused]] CC_Mqtt5Publish
         return;
     }
 
-    assert(response != nullptr);
-    if (response->m_reasonCode < CC_Mqtt5ReasonCode_UnspecifiedError) {
+    if (response == nullptr) {
+        return;
+    }
+
+    if (CC_Mqtt5ReasonCode_UnspecifiedError <= response->m_reasonCode) {
         reportError(tr("MQTT broker rejected publish with reasonCode=") + QString::number(response->m_reasonCode));
         return;        
     }    
@@ -423,6 +495,11 @@ void Mqtt5ClientFilter::errorLogCb([[maybe_unused]] void* data, const char* msg)
 void Mqtt5ClientFilter::connectCompleteCb(void* data, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response)
 {
     asThis(data)->connectCompleteInternal(status, response);
+}
+
+void Mqtt5ClientFilter::subscribeCompleteCb(void* data, CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response)
+{
+    asThis(data)->subscribeCompleteInternal(handle, status, response);
 }
 
 void Mqtt5ClientFilter::publishCompleteCb(void* data, CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response)

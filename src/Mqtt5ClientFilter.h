@@ -43,7 +43,11 @@ public:
     {
         unsigned m_respTimeout = 0U;
         QString m_clientId;
-        QString m_pubTopic; // TODO: configure in UI
+        QString m_username; // TODO: configure and use
+        QString m_password; // TODO: configure and use
+        QString m_subTopics = "#";
+        int m_subQos = 2;
+        QString m_pubTopic;
         int m_pubQos = 0;
     };
 
@@ -53,6 +57,11 @@ public:
     Config& config()
     {
         return m_config;
+    }
+
+    void forceCleanStart()
+    {
+        m_firstConnect = true;
     }
 
 protected:
@@ -85,6 +94,7 @@ private:
     void nextTickProgramInternal(unsigned ms);
     unsigned cancelTickProgramInternal();
     void connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
+    void subscribeCompleteInternal(CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response);
     void publishCompleteInternal(CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response);
 
     static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
@@ -94,6 +104,7 @@ private:
     static unsigned cancelTickProgramCb(void* data);
     static void errorLogCb(void* data, const char* msg);
     static void connectCompleteCb(void* data, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
+    static void subscribeCompleteCb(void* data, CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response);
     static void publishCompleteCb(void* data, CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response);
 
     ClientPtr m_client;
@@ -103,7 +114,7 @@ private:
     Config m_config;
     std::string m_prevClientId;
     unsigned m_tickMs = 0U;
-    qint64 m_tickMeasureTs = 0U;
+    qint64 m_tickMeasureTs = 0;
     cc_tools_qt::DataInfoPtr m_recvDataPtr;
     QList<cc_tools_qt::DataInfoPtr> m_recvData;
     cc_tools_qt::DataInfoPtr m_sendDataPtr;
