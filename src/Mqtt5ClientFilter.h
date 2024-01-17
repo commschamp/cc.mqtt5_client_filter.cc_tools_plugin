@@ -34,7 +34,7 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
-class Mqtt5ClientFilter : public QObject, public cc_tools_qt::Filter
+class Mqtt5ClientFilter final : public QObject, public cc_tools_qt::Filter
 {
     Q_OBJECT
 
@@ -121,6 +121,7 @@ private:
     cc_tools_qt::DataInfoPtr m_sendDataPtr;
     QList<cc_tools_qt::DataInfoPtr> m_sendData;
     bool m_firstConnect = true;
+    bool m_socketConnected = false;
     bool m_waitingForDisconnect = false;
 };
 

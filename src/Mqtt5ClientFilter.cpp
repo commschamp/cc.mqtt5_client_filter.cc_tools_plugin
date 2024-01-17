@@ -134,8 +134,29 @@ bool Mqtt5ClientFilter::startImpl()
 
 void Mqtt5ClientFilter::stopImpl()
 {
-    assert(false); // TODO:
-    // ???
+    if (!::cc_mqtt5_client_is_connected(m_client.get())) {
+        return;
+    }
+
+    CC_Mqtt5DisconnectHandle disconnect = ::cc_mqtt5_client_disconnect_prepare(m_client.get(), nullptr);
+    if (disconnect == nullptr) {
+        reportError(tr("Failed to allocate DISCONNECT message in MQTT5 client"));
+        return;
+    }    
+
+    auto config = CC_Mqtt5DisconnectConfig();
+    ::cc_mqtt5_client_disconnect_init_config(&config);
+    auto ec = ::cc_mqtt5_client_disconnect_config(disconnect, &config);
+    if (ec != CC_Mqtt5ErrorCode_Success) {
+        reportError(tr("Failed to configure MQTT5 disconnect with ec=") + QString::number(ec));
+        return;
+    }    
+
+    ec = cc_mqtt5_client_disconnect_send(disconnect);
+    if (ec != CC_Mqtt5ErrorCode_Success) {
+        reportError(tr("Failed to send disconnect with ec=") + QString::number(ec));
+        return;
+    }    
 }
 
 QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::recvDataImpl(cc_tools_qt::DataInfoPtr dataPtr)
@@ -153,17 +174,16 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::recvDataImpl(cc_tools_qt::Dat
 QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::DataInfoPtr dataPtr)
 {
     m_sendData.clear();
-    
 
-    CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
-    CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
-    if (publish == NULL) {
-        reportError(tr("Publish allocation failed with ec=") + QString::number(ec));
+    if (!m_socketConnected) {
+        reportError(tr("Cannot send MQTT5 data when socket is not connected"));
         return m_sendData;
     }
 
-    auto basicConfig = CC_Mqtt5PublishBasicConfig();
-    ::cc_mqtt5_client_publish_init_config_basic(&basicConfig);
+    if (!::cc_mqtt5_client_is_connected(m_client.get())) {
+        m_pendingData.push_back(std::move(dataPtr));
+        return m_sendData;
+    }
 
     std::string topic = m_config.m_pubTopic.toStdString();
     auto& props = dataPtr->m_extraProperties;
@@ -181,6 +201,16 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     else {
         props[qosProp()] = qos;
     }
+
+    CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
+    CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
+    if (publish == NULL) {
+        reportError(tr("Publish allocation failed with ec=") + QString::number(ec));
+        return m_sendData;
+    }
+
+    auto basicConfig = CC_Mqtt5PublishBasicConfig();
+    ::cc_mqtt5_client_publish_init_config_basic(&basicConfig);
 
     basicConfig.m_topic = topic.c_str();
     basicConfig.m_data = dataPtr->m_data.data();
@@ -209,6 +239,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
 void Mqtt5ClientFilter::socketConnectionReportImpl(bool connected)
 {
+    m_socketConnected = connected;
     if (connected) {
         socketConnected();
         return;
@@ -280,8 +311,8 @@ void Mqtt5ClientFilter::socketConnected()
 
 void Mqtt5ClientFilter::socketDisconnected()
 {
-    // TODO:
-    assert(false);
+    m_waitingForDisconnect = true;
+    ::cc_mqtt5_client_notify_network_disconnected(m_client.get(), true);
 }
 
 void Mqtt5ClientFilter::sendDataInternal(const unsigned char* buf, unsigned bufLen)
@@ -389,6 +420,11 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
     }
 
     m_firstConnect = false;
+
+    for (auto& dataPtr : m_pendingData) {
+        sendDataImpl(std::move(dataPtr));
+    }
+    m_pendingData.clear();
 
     if (response->m_sessionPresent) {
         return;
