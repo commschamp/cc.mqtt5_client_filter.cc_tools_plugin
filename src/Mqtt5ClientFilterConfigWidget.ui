@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>306</width>
-    <height>246</height>
+    <height>366</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,6 +59,105 @@
      </item>
      <item>
       <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLabel" name="m_usernameLabel">
+       <property name="text">
+        <string>Username:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="m_usernameLineEdit"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_7">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QLabel" name="m_usernameLabel_2">
+       <property name="text">
+        <string>Password:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="m_passwordLineEdit">
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_8">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
+     <item>
+      <widget class="QLabel" name="m_cleanStartLabel">
+       <property name="toolTip">
+        <string>Force clean start on every (re) connection</string>
+       </property>
+       <property name="text">
+        <string>Force Clean Start:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="m_cleanStartComboBox">
+       <item>
+        <property name="text">
+         <string>No</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Yes</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_9">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -142,7 +241,7 @@
      <item>
       <widget class="QLabel" name="m_pubTopicLabel">
        <property name="text">
-        <string>Publish Topic:</string>
+        <string>Default Publish Topic:</string>
        </property>
       </widget>
      </item>
@@ -169,7 +268,7 @@
      <item>
       <widget class="QLabel" name="m_pubQosLabel">
        <property name="text">
-        <string>Pub QoS:</string>
+        <string>Default Publish QoS:</string>
        </property>
       </widget>
      </item>

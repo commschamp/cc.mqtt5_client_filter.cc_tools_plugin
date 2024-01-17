@@ -43,12 +43,13 @@ public:
     {
         unsigned m_respTimeout = 0U;
         QString m_clientId;
-        QString m_username; // TODO: configure and use
-        QString m_password; // TODO: configure and use
+        QString m_username; 
+        QString m_password; 
         QString m_subTopics = "#";
         int m_subQos = 2;
         QString m_pubTopic;
         int m_pubQos = 0;
+        bool m_forcedCleanStart = false;
     };
 
     Mqtt5ClientFilter();

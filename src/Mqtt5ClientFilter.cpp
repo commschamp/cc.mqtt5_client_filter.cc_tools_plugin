@@ -248,12 +248,15 @@ void Mqtt5ClientFilter::socketConnected()
     ::cc_mqtt5_client_connect_init_config_basic(&basicConfig);
 
     auto clientId = m_config.m_clientId.toStdString();
+    auto username = m_config.m_username.toStdString();
+    auto password = m_config.m_username.toStdString();
     
     if (!clientId.empty()) {
         basicConfig.m_clientId = clientId.c_str();
     }
 
     basicConfig.m_cleanStart = 
+        (m_config.m_forcedCleanStart) ||
         (clientId.empty()) || 
         (clientId != m_prevClientId) ||
         (m_firstConnect);

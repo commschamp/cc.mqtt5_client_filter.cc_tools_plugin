@@ -41,6 +41,9 @@ public:
 private slots:
     void respTimeoutUpdated(int val);
     void clientIdUpdated(const QString& val);
+    void usernameUpdated(const QString& val);
+    void passwordUpdated(const QString& val);
+    void forcedCleanStartUpdated(int val);
     void subTopicsUpdated(const QString& val);
     void subQosUpdated(int val);
     void pubTopicUpdated(const QString& val);

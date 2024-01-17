@@ -30,6 +30,9 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
     m_ui.m_respTimeoutSpinBox->setValue(m_filter.config().m_respTimeout);
     m_ui.m_clientIdLineEdit->setText(m_filter.config().m_clientId);
+    m_ui.m_usernameLineEdit->setText(m_filter.config().m_username);
+    m_ui.m_passwordLineEdit->setText(m_filter.config().m_password);
+    m_ui.m_cleanStartComboBox->setCurrentIndex(static_cast<int>(m_filter.config().m_forcedCleanStart));
     m_ui.m_subTopicsLineEdit->setText(m_filter.config().m_subTopics);
     m_ui.m_subQosSpinBox->setValue(m_filter.config().m_subQos);
     m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
@@ -42,6 +45,18 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
     connect(
         m_ui.m_clientIdLineEdit, &QLineEdit::textChanged,
         this, &Mqtt5ClientFilterConfigWidget::clientIdUpdated);
+
+    connect(
+        m_ui.m_usernameLineEdit, &QLineEdit::textChanged,
+        this, &Mqtt5ClientFilterConfigWidget::usernameUpdated);        
+
+    connect(
+        m_ui.m_passwordLineEdit, &QLineEdit::textChanged,
+        this, &Mqtt5ClientFilterConfigWidget::passwordUpdated);        
+
+    connect(
+        m_ui.m_cleanStartComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
+        this, &Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated);           
 
     connect(
         m_ui.m_subTopicsLineEdit, &QLineEdit::textChanged,
@@ -71,6 +86,21 @@ void Mqtt5ClientFilterConfigWidget::clientIdUpdated(const QString& val)
 {
     m_filter.config().m_clientId = val;
     m_filter.forceCleanStart();
+}
+
+void Mqtt5ClientFilterConfigWidget::usernameUpdated(const QString& val)
+{
+    m_filter.config().m_username = val;
+}
+
+void Mqtt5ClientFilterConfigWidget::passwordUpdated(const QString& val)
+{
+    m_filter.config().m_password = val;
+}
+
+void Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated(int val)
+{
+    m_filter.config().m_forcedCleanStart = (val > 0);
 }
 
 void Mqtt5ClientFilterConfigWidget::subTopicsUpdated(const QString& val)

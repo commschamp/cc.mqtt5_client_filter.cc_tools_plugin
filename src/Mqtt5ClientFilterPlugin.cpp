@@ -33,6 +33,9 @@ namespace
 const QString MainConfigKey("cc_plugin_mqtt5_client_filter");
 const QString RespTimeoutSubKey("resp_timeout");
 const QString ClientIdSubKey("client_id");
+const QString UsernameSubKey("username");
+const QString PasswordSubKey("password");
+const QString ForceCleanStartSubKey("force_clean_start");
 const QString SubTopicsSubKey("sub_topics");
 const QString SubQosSubKey("sub_qos");
 const QString PubTopicSubKey("pub_topic");
@@ -82,6 +85,9 @@ void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
     QVariantMap subConfig;
     subConfig.insert(RespTimeoutSubKey, m_filter->config().m_respTimeout);
     subConfig.insert(ClientIdSubKey, m_filter->config().m_clientId);
+    subConfig.insert(UsernameSubKey, m_filter->config().m_username);
+    subConfig.insert(PasswordSubKey, m_filter->config().m_password);
+    subConfig.insert(ForceCleanStartSubKey, m_filter->config().m_forcedCleanStart);
     subConfig.insert(SubTopicsSubKey, m_filter->config().m_subTopics);
     subConfig.insert(SubQosSubKey, m_filter->config().m_subQos);
     subConfig.insert(PubTopicSubKey, m_filter->config().m_pubTopic);
@@ -103,6 +109,9 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
 
     getFromConfigMap(subConfig, RespTimeoutSubKey, m_filter->config().m_respTimeout);
     getFromConfigMap(subConfig, ClientIdSubKey, m_filter->config().m_clientId);
+    getFromConfigMap(subConfig, UsernameSubKey, m_filter->config().m_username);
+    getFromConfigMap(subConfig, PasswordSubKey, m_filter->config().m_password);
+    getFromConfigMap(subConfig, ForceCleanStartSubKey, m_filter->config().m_forcedCleanStart);
     getFromConfigMap(subConfig, SubTopicsSubKey, m_filter->config().m_subTopics);
     getFromConfigMap(subConfig, SubQosSubKey, m_filter->config().m_subQos);
     getFromConfigMap(subConfig, PubTopicSubKey, m_filter->config().m_pubTopic);
