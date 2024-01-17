@@ -216,13 +216,31 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     basicConfig.m_data = dataPtr->m_data.data();
     basicConfig.m_dataLen = static_cast<decltype(basicConfig.m_dataLen)>(dataPtr->m_data.size());
     basicConfig.m_qos = static_cast<decltype(basicConfig.m_qos)>(qos);    
-    ec = cc_mqtt5_client_publish_config_basic(publish, &basicConfig);
+    ec = ::cc_mqtt5_client_publish_config_basic(publish, &basicConfig);
     if (ec != CC_Mqtt5ErrorCode_Success) {
         reportError(tr("Failed to configure MQTT5 publish with ec=") + QString::number(ec));
         return m_sendData;
     }    
 
     // TODO: configure properties
+
+    auto respTopic = m_config.m_respTopic.toStdString();
+    bool hasExtra = 
+        (!respTopic.empty());
+
+    if (hasExtra) {
+        auto extraConfig = CC_Mqtt5PublishExtraConfig();
+        ::cc_mqtt5_client_publish_init_config_extra(&extraConfig);
+        
+        if (!respTopic.empty()) {
+            extraConfig.m_responseTopic = respTopic.c_str();
+        }
+
+        ec = ::cc_mqtt5_client_publish_config_extra(publish, &extraConfig);
+        if (ec != CC_Mqtt5ErrorCode_Success) {
+            reportError(tr("Failed to configure extra properties for MQTT5 publish with ec=") + QString::number(ec));
+        }           
+    }
 
     m_sendDataPtr = std::move(dataPtr);
 

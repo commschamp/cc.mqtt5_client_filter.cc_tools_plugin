@@ -48,6 +48,7 @@ public:
         QString m_subTopics = "#";
         int m_subQos = 2;
         QString m_pubTopic;
+        QString m_respTopic;
         int m_pubQos = 0;
         bool m_forcedCleanStart = false;
     };

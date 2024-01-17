@@ -48,6 +48,7 @@ private slots:
     void subQosUpdated(int val);
     void pubTopicUpdated(const QString& val);
     void pubQosUpdated(int val);
+    void respTopicUpdated(const QString& val);
 
 private:
     Mqtt5ClientFilter& m_filter;

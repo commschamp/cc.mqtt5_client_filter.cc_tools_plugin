@@ -40,6 +40,7 @@ const QString SubTopicsSubKey("sub_topics");
 const QString SubQosSubKey("sub_qos");
 const QString PubTopicSubKey("pub_topic");
 const QString PubQosSubKey("pub_qos");
+const QString RespTopicSubKey("resp_topic");
 
 
 template <typename T>
@@ -92,6 +93,7 @@ void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
     subConfig.insert(SubQosSubKey, m_filter->config().m_subQos);
     subConfig.insert(PubTopicSubKey, m_filter->config().m_pubTopic);
     subConfig.insert(PubQosSubKey, m_filter->config().m_pubQos);
+    subConfig.insert(RespTopicSubKey, m_filter->config().m_respTopic);
     config.insert(MainConfigKey, QVariant::fromValue(subConfig));
 }
 
@@ -116,6 +118,7 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
     getFromConfigMap(subConfig, SubQosSubKey, m_filter->config().m_subQos);
     getFromConfigMap(subConfig, PubTopicSubKey, m_filter->config().m_pubTopic);
     getFromConfigMap(subConfig, PubQosSubKey, m_filter->config().m_pubQos);
+    getFromConfigMap(subConfig, RespTopicSubKey, m_filter->config().m_respTopic);
 }
 
 void Mqtt5ClientFilterPlugin::createFilterIfNeeded()

@@ -37,6 +37,7 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
     m_ui.m_subQosSpinBox->setValue(m_filter.config().m_subQos);
     m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
     m_ui.m_pubQosSpinBox->setValue(m_filter.config().m_pubQos);
+    m_ui.m_respTopicLineEdit->setText(m_filter.config().m_respTopic);
 
     connect(
         m_ui.m_respTimeoutSpinBox, qOverload<int>(&QSpinBox::valueChanged),
@@ -72,7 +73,11 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
     connect(
         m_ui.m_pubQosSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::pubQosUpdated);           
+        this, &Mqtt5ClientFilterConfigWidget::pubQosUpdated);   
+
+    connect(
+        m_ui.m_respTopicLineEdit, &QLineEdit::textChanged,
+        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);                 
 }
 
 Mqtt5ClientFilterConfigWidget::~Mqtt5ClientFilterConfigWidget() noexcept = default;
@@ -123,6 +128,11 @@ void Mqtt5ClientFilterConfigWidget::pubTopicUpdated(const QString& val)
 void Mqtt5ClientFilterConfigWidget::pubQosUpdated(int val)
 {
     m_filter.config().m_pubQos = static_cast<unsigned>(val);
+}
+
+void Mqtt5ClientFilterConfigWidget::respTopicUpdated(const QString& val)
+{
+    m_filter.config().m_respTopic = val;
 }
 
 }  // namespace cc_plugin_mqtt5_client_filter
