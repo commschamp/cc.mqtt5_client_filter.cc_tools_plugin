@@ -41,6 +41,9 @@ const QString SubQosSubKey("sub_qos");
 const QString PubTopicSubKey("pub_topic");
 const QString PubQosSubKey("pub_qos");
 const QString RespTopicSubKey("resp_topic");
+const QString AliasTopicSubKey("alias_topic");
+const QString AliasTopicQos0RegsSubKey("alias_qos0_regs");
+const QString TopicAliasesSubKey("topic_aliases");
 
 
 template <typename T>
@@ -51,6 +54,54 @@ void getFromConfigMap(const QVariantMap& subConfig, const QString& key, T& val)
     if (var.isValid() && var.canConvert<Type>()) {
         val = var.value<Type>();
     }    
+}
+
+QVariantMap toVariantMap(const Mqtt5ClientFilter::TopicAliasConfig& config)
+{
+    QVariantMap result;
+    result[AliasTopicSubKey] = config.m_topic;
+    result[AliasTopicQos0RegsSubKey] = config.m_qos0Rep;
+    return result;
+}
+
+void fromVariantMap(const QVariantMap& map, Mqtt5ClientFilter::TopicAliasConfig& config)
+{
+    getFromConfigMap(map, AliasTopicSubKey, config.m_topic);
+    getFromConfigMap(map, AliasTopicQos0RegsSubKey, config.m_qos0Rep);
+}
+
+
+QVariantList toVariantList(const Mqtt5ClientFilter::TopicAliasConfigsList& configsList)
+{
+    QVariantList result;
+    for (auto& info : configsList) {
+        result.append(toVariantMap(info));
+    }
+    return result;
+}
+
+template <typename T>
+void getListFromConfigMap(const QVariantMap& subConfig, const QString& key, T& list)
+{
+    list.clear();
+
+    auto var = subConfig.value(key);
+    if ((!var.isValid()) || (!var.canConvert<QVariantList>())) {
+        return;
+    }    
+
+    auto varList = var.value<QVariantList>();
+    for (auto& elemVar : varList) {
+
+        if ((!elemVar.isValid()) || (!elemVar.canConvert<QVariantMap>())) {
+            return;
+        }            
+
+        auto varMap = elemVar.value<QVariantMap>();
+
+        list.resize(list.size() + 1U);
+        fromVariantMap(varMap, list.back());
+    }
 }
 
 } // namespace 
@@ -94,6 +145,7 @@ void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
     subConfig.insert(PubTopicSubKey, m_filter->config().m_pubTopic);
     subConfig.insert(PubQosSubKey, m_filter->config().m_pubQos);
     subConfig.insert(RespTopicSubKey, m_filter->config().m_respTopic);
+    subConfig.insert(TopicAliasesSubKey, toVariantList(m_filter->config().m_topicAliases));
     config.insert(MainConfigKey, QVariant::fromValue(subConfig));
 }
 
@@ -119,6 +171,7 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
     getFromConfigMap(subConfig, PubTopicSubKey, m_filter->config().m_pubTopic);
     getFromConfigMap(subConfig, PubQosSubKey, m_filter->config().m_pubQos);
     getFromConfigMap(subConfig, RespTopicSubKey, m_filter->config().m_respTopic);
+    getListFromConfigMap(subConfig, TopicAliasesSubKey, m_filter->config().m_topicAliases);
 }
 
 void Mqtt5ClientFilterPlugin::createFilterIfNeeded()

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "ui_Mqtt5ClientFilterConfigWidget.h"
+#include "ui_Mqtt5ClientFilterTopicAliasWidget.h"
 
 #include "Mqtt5ClientFilter.h"
 
@@ -28,36 +28,25 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
-class Mqtt5ClientFilterConfigWidget : public QWidget
+class Mqtt5ClientFilterTopicAliasWidget : public QWidget
 {
     Q_OBJECT
     using Base = QWidget;
 
 public:
-    explicit Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& filter, QWidget* parentObj = nullptr);
-    ~Mqtt5ClientFilterConfigWidget() noexcept;
-
-private slots:
-    void respTimeoutUpdated(int val);
-    void clientIdUpdated(const QString& val);
-    void usernameUpdated(const QString& val);
-    void passwordUpdated(const QString& val);
-    void forcedCleanStartUpdated(int val);
-    void subTopicsUpdated(const QString& val);
-    void subQosUpdated(int val);
-    void pubTopicUpdated(const QString& val);
-    void pubQosUpdated(int val);
-    void respTopicUpdated(const QString& val);
-    void addTopicAlias();
-
-private:
     using TopicAliasConfig = Mqtt5ClientFilter::TopicAliasConfig;
 
-    void refreshTopicAliases();
-    void addTopicAliasWidget(TopicAliasConfig& config);
+    explicit Mqtt5ClientFilterTopicAliasWidget(Mqtt5ClientFilter& filter, TopicAliasConfig& config, QWidget* parentObj = nullptr);
+    ~Mqtt5ClientFilterTopicAliasWidget() noexcept = default;
 
+private slots:
+    void topicAliasUpdated(const QString& val);
+    void delClicked(bool checked);
+
+private:
     Mqtt5ClientFilter& m_filter;
-    Ui::Mqtt5ClientFilterConfigWidget m_ui;
+    TopicAliasConfig& m_config;
+    Ui::Mqtt5ClientFilterTopicAliasWidget m_ui;
 };
 
 }  // namespace cc_plugin_mqtt5_client_filter

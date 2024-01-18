@@ -53,6 +53,8 @@ set (src
     src/Mqtt5ClientFilterConfigWidget.cpp
     src/Mqtt5ClientFilterConfigWidget.ui
     src/Mqtt5ClientFilterPlugin.cpp
+    src/Mqtt5ClientFilterTopicAliasWidget.cpp
+    src/ui.qrc
 )
 
 add_library (${CMAKE_PROJECT_NAME} MODULE ${src})

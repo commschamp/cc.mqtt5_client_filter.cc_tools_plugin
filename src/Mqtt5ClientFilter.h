@@ -39,6 +39,15 @@ class Mqtt5ClientFilter final : public QObject, public cc_tools_qt::Filter
     Q_OBJECT
 
 public:
+    struct TopicAliasConfig
+    {
+        QString m_topic;
+        unsigned m_qos0Rep = 2;
+    };
+
+    // erase the element mustn't invalidate references to other elements, using list.
+    using TopicAliasConfigsList = std::list<TopicAliasConfig>; 
+
     struct Config
     {
         unsigned m_respTimeout = 0U;
@@ -50,6 +59,7 @@ public:
         QString m_pubTopic;
         QString m_respTopic;
         int m_pubQos = 0;
+        TopicAliasConfigsList m_topicAliases;
         bool m_forcedCleanStart = false;
     };
 
@@ -89,6 +99,8 @@ private:
 
     void socketConnected();
     void socketDisconnected();
+    void sendPendingData();
+    void registerTopicAliases();
 
     void sendDataInternal(const unsigned char* buf, unsigned bufLen);
     void brokerDisconnectedInternal();
@@ -98,6 +110,7 @@ private:
     void connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
     void subscribeCompleteInternal(CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response);
     void publishCompleteInternal(CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response);
+    
 
     static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
     static void brokerDisconnectedCb(void* data, const CC_Mqtt5DisconnectInfo* info);

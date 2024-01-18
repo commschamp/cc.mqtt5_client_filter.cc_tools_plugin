@@ -22,6 +22,7 @@
 #include <QtCore/QList>
 
 #include <cassert>
+#include <cstdint>
 #include <limits>
 #include <iostream>
 #include <string>
@@ -333,6 +334,26 @@ void Mqtt5ClientFilter::socketDisconnected()
     ::cc_mqtt5_client_notify_network_disconnected(m_client.get(), true);
 }
 
+void Mqtt5ClientFilter::sendPendingData()
+{
+    for (auto& dataPtr : m_pendingData) {
+        sendDataImpl(std::move(dataPtr));
+    }
+    m_pendingData.clear();
+}
+
+void Mqtt5ClientFilter::registerTopicAliases()
+{
+    for (auto& info : m_config.m_topicAliases) {
+        if (info.m_topic.isEmpty()) {
+            continue;
+        }
+
+        auto topic = info.m_topic.toStdString();
+        ::cc_mqtt5_client_pub_topic_alias_alloc(m_client.get(), topic.c_str(), static_cast<std::uint8_t>(info.m_qos0Rep));
+    }
+}
+
 void Mqtt5ClientFilter::sendDataInternal(const unsigned char* buf, unsigned bufLen)
 {
     auto dataInfo = cc_tools_qt::makeDataInfoTimed();
@@ -439,10 +460,8 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
 
     m_firstConnect = false;
 
-    for (auto& dataPtr : m_pendingData) {
-        sendDataImpl(std::move(dataPtr));
-    }
-    m_pendingData.clear();
+    registerTopicAliases();
+    sendPendingData();
 
     if (response->m_sessionPresent) {
         return;

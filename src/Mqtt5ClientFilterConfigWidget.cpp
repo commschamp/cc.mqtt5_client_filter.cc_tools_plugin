@@ -17,6 +17,8 @@
 
 #include "Mqtt5ClientFilterConfigWidget.h"
 
+#include "Mqtt5ClientFilterTopicAliasWidget.h"
+
 #include <cassert>
 
 namespace cc_plugin_mqtt5_client_filter
@@ -28,6 +30,13 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 {
     m_ui.setupUi(this);
 
+    auto topicAliasesLayout = new QVBoxLayout;
+    m_ui.m_topicAliaseWidget->setLayout(topicAliasesLayout);
+
+    for (auto& aliasConfig : m_filter.config().m_topicAliases) {
+        addTopicAliasWidget(aliasConfig);
+    }
+    
     m_ui.m_respTimeoutSpinBox->setValue(m_filter.config().m_respTimeout);
     m_ui.m_clientIdLineEdit->setText(m_filter.config().m_clientId);
     m_ui.m_usernameLineEdit->setText(m_filter.config().m_username);
@@ -38,6 +47,8 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
     m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
     m_ui.m_pubQosSpinBox->setValue(m_filter.config().m_pubQos);
     m_ui.m_respTopicLineEdit->setText(m_filter.config().m_respTopic);
+
+    refreshTopicAliases();
 
     connect(
         m_ui.m_respTimeoutSpinBox, qOverload<int>(&QSpinBox::valueChanged),
@@ -77,7 +88,11 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
     connect(
         m_ui.m_respTopicLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);                 
+        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);     
+
+    connect(
+        m_ui.m_addTopicAliasPushButton, &QPushButton::clicked,
+        this, &Mqtt5ClientFilterConfigWidget::addTopicAlias);                     
 }
 
 Mqtt5ClientFilterConfigWidget::~Mqtt5ClientFilterConfigWidget() noexcept = default;
@@ -133,6 +148,36 @@ void Mqtt5ClientFilterConfigWidget::pubQosUpdated(int val)
 void Mqtt5ClientFilterConfigWidget::respTopicUpdated(const QString& val)
 {
     m_filter.config().m_respTopic = val;
+}
+
+void Mqtt5ClientFilterConfigWidget::addTopicAlias()
+{
+    auto& aliases = m_filter.config().m_topicAliases;
+    aliases.resize(aliases.size() + 1U);
+    addTopicAliasWidget(aliases.back());
+    refreshTopicAliases();
+}
+
+void Mqtt5ClientFilterConfigWidget::refreshTopicAliases()
+{
+    bool topicAliasesVisible = !m_filter.config().m_topicAliases.empty();
+    m_ui.m_topicAliaseWidget->setVisible(topicAliasesVisible);
+}
+
+void Mqtt5ClientFilterConfigWidget::addTopicAliasWidget(TopicAliasConfig& config)
+{
+    auto* aliasWidget = new Mqtt5ClientFilterTopicAliasWidget(m_filter, config, this);
+    connect(
+        aliasWidget, &QObject::destroyed,
+        this,
+        [this](QObject*)
+        {
+            refreshTopicAliases();
+        });
+
+    auto* topicAliasesLayout = qobject_cast<QVBoxLayout*>(m_ui.m_topicAliaseWidget->layout());
+    assert(topicAliasesLayout != nullptr);
+    topicAliasesLayout->addWidget(aliasWidget);    
 }
 
 }  // namespace cc_plugin_mqtt5_client_filter
