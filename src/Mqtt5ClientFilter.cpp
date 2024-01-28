@@ -473,21 +473,21 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
         return;
     }    
 
-    auto topics = m_config.m_subTopics.split(",");
-    for (auto& t : topics) {
-        auto topicStr = t.trimmed().toStdString();
+    for (auto& sub : m_config.m_subscribes) {
+        auto topicStr = sub.m_topic.trimmed().toStdString();
 
         auto topicConfig = CC_Mqtt5SubscribeTopicConfig();
         ::cc_mqtt5_client_subscribe_init_config_topic(&topicConfig);
         topicConfig.m_topic = topicStr.c_str();
-        topicConfig.m_maxQos = static_cast<decltype(topicConfig.m_maxQos)>(m_config.m_subQos);
-        topicConfig.m_noLocal = true;   
-        // TODO: all config options   
+        topicConfig.m_maxQos = static_cast<decltype(topicConfig.m_maxQos)>(sub.m_maxQos);
+        topicConfig.m_retainHandling = static_cast<decltype(topicConfig.m_retainHandling)>(sub.m_retainHandling);
+        topicConfig.m_noLocal = sub.m_noLocal;   
+        topicConfig.m_retainAsPublished = sub.m_retainAsPublished;   
 
         auto ec = ::cc_mqtt5_client_subscribe_config_topic(subscribe, &topicConfig);
         if (ec != CC_Mqtt5ErrorCode_Success) {
             reportError(
-                QString("%1 \"%2\", ec=%3").arg(tr("Failed to configure topic")).arg(t).arg(ec));
+                QString("%1 \"%2\", ec=%3").arg(tr("Failed to configure topic")).arg(sub.m_topic).arg(ec));
             continue;
         }  
     }

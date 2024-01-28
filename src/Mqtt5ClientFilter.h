@@ -39,6 +39,18 @@ class Mqtt5ClientFilter final : public QObject, public cc_tools_qt::Filter
     Q_OBJECT
 
 public:
+    struct SubConfig
+    {
+        QString m_topic;
+        int m_maxQos = 2;
+        int m_retainHandling = 0;
+        bool m_noLocal = false;
+        bool m_retainAsPublished = false;
+    };
+
+    // erase the element mustn't invalidate references to other elements, using list.
+    using SubConfigsList = std::list<SubConfig>; 
+
     struct TopicAliasConfig
     {
         QString m_topic;
@@ -54,11 +66,10 @@ public:
         QString m_clientId;
         QString m_username; 
         QString m_password; 
-        QString m_subTopics = "#";
-        int m_subQos = 2;
         QString m_pubTopic;
         QString m_respTopic;
         int m_pubQos = 0;
+        SubConfigsList m_subscribes;
         TopicAliasConfigsList m_topicAliases;
         bool m_forcedCleanStart = false;
     };

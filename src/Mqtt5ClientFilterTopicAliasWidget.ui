@@ -15,16 +15,6 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QLabel" name="m_topicAliasLabel">
-     <property name="text">
-      <string>Topic Alias:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="m_topicAliasLineEdit"/>
-   </item>
-   <item>
     <widget class="QToolButton" name="m_delToolButton">
      <property name="toolTip">
       <string>Remove</string>
@@ -37,6 +27,16 @@
        <normaloff>:/image/delete.png</normaloff>:/image/delete.png</iconset>
      </property>
     </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="m_topicAliasLabel">
+     <property name="text">
+      <string>Topic Alias:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="m_topicAliasLineEdit"/>
    </item>
    <item>
     <spacer name="horizontalSpacer">

@@ -51,8 +51,8 @@ set (PLUGIN_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${PLUGIN_INSTALL_REL_DIR})
 set (src
     src/Mqtt5ClientFilter.cpp
     src/Mqtt5ClientFilterConfigWidget.cpp
-    src/Mqtt5ClientFilterConfigWidget.ui
     src/Mqtt5ClientFilterPlugin.cpp
+    src/Mqtt5ClientFilterSubConfigWidget.cpp
     src/Mqtt5ClientFilterTopicAliasWidget.cpp
     src/ui.qrc
 )

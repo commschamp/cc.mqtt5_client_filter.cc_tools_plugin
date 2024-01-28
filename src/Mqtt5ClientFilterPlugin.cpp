@@ -36,14 +36,18 @@ const QString ClientIdSubKey("client_id");
 const QString UsernameSubKey("username");
 const QString PasswordSubKey("password");
 const QString ForceCleanStartSubKey("force_clean_start");
-const QString SubTopicsSubKey("sub_topics");
-const QString SubQosSubKey("sub_qos");
 const QString PubTopicSubKey("pub_topic");
 const QString PubQosSubKey("pub_qos");
 const QString RespTopicSubKey("resp_topic");
 const QString AliasTopicSubKey("alias_topic");
 const QString AliasTopicQos0RegsSubKey("alias_qos0_regs");
 const QString TopicAliasesSubKey("topic_aliases");
+const QString SubTopicSubKey("sub_topic");
+const QString SubQosSubKey("sub_qos");
+const QString SubNoLocalKey("sub_no_local");
+const QString SubRetainAsPublishedKey("sub_retain_as_published");
+const QString SubRetainHandlingKey("sub_retain_handling");
+const QString SubscribesSubKey("subscribes");
 
 
 template <typename T>
@@ -54,6 +58,35 @@ void getFromConfigMap(const QVariantMap& subConfig, const QString& key, T& val)
     if (var.isValid() && var.canConvert<Type>()) {
         val = var.value<Type>();
     }    
+}
+
+QVariantMap toVariantMap(const Mqtt5ClientFilter::SubConfig& config)
+{
+    QVariantMap result;
+    result[SubTopicSubKey] = config.m_topic;
+    result[SubQosSubKey] = config.m_maxQos;
+    result[SubNoLocalKey] = config.m_noLocal;
+    result[SubRetainAsPublishedKey] = config.m_retainAsPublished;
+    result[SubRetainHandlingKey] = config.m_retainHandling;
+    return result;
+}
+
+void fromVariantMap(const QVariantMap& map, Mqtt5ClientFilter::SubConfig& config)
+{
+    getFromConfigMap(map, SubTopicSubKey, config.m_topic);
+    getFromConfigMap(map, SubQosSubKey, config.m_maxQos);
+    getFromConfigMap(map, SubNoLocalKey, config.m_noLocal);
+    getFromConfigMap(map, SubRetainAsPublishedKey, config.m_retainAsPublished);
+    getFromConfigMap(map, SubRetainHandlingKey, config.m_retainHandling);
+}
+
+QVariantList toVariantList(const Mqtt5ClientFilter::SubConfigsList& configsList)
+{
+    QVariantList result;
+    for (auto& info : configsList) {
+        result.append(toVariantMap(info));
+    }
+    return result;
 }
 
 QVariantMap toVariantMap(const Mqtt5ClientFilter::TopicAliasConfig& config)
@@ -140,11 +173,10 @@ void Mqtt5ClientFilterPlugin::getCurrentConfigImpl(QVariantMap& config)
     subConfig.insert(UsernameSubKey, m_filter->config().m_username);
     subConfig.insert(PasswordSubKey, m_filter->config().m_password);
     subConfig.insert(ForceCleanStartSubKey, m_filter->config().m_forcedCleanStart);
-    subConfig.insert(SubTopicsSubKey, m_filter->config().m_subTopics);
-    subConfig.insert(SubQosSubKey, m_filter->config().m_subQos);
     subConfig.insert(PubTopicSubKey, m_filter->config().m_pubTopic);
     subConfig.insert(PubQosSubKey, m_filter->config().m_pubQos);
     subConfig.insert(RespTopicSubKey, m_filter->config().m_respTopic);
+    subConfig.insert(SubscribesSubKey, toVariantList(m_filter->config().m_subscribes));
     subConfig.insert(TopicAliasesSubKey, toVariantList(m_filter->config().m_topicAliases));
     config.insert(MainConfigKey, QVariant::fromValue(subConfig));
 }
@@ -166,11 +198,10 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
     getFromConfigMap(subConfig, UsernameSubKey, m_filter->config().m_username);
     getFromConfigMap(subConfig, PasswordSubKey, m_filter->config().m_password);
     getFromConfigMap(subConfig, ForceCleanStartSubKey, m_filter->config().m_forcedCleanStart);
-    getFromConfigMap(subConfig, SubTopicsSubKey, m_filter->config().m_subTopics);
-    getFromConfigMap(subConfig, SubQosSubKey, m_filter->config().m_subQos);
     getFromConfigMap(subConfig, PubTopicSubKey, m_filter->config().m_pubTopic);
     getFromConfigMap(subConfig, PubQosSubKey, m_filter->config().m_pubQos);
     getFromConfigMap(subConfig, RespTopicSubKey, m_filter->config().m_respTopic);
+    getListFromConfigMap(subConfig, SubscribesSubKey, m_filter->config().m_subscribes);
     getListFromConfigMap(subConfig, TopicAliasesSubKey, m_filter->config().m_topicAliases);
 }
 

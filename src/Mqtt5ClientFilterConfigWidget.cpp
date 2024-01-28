@@ -17,6 +17,7 @@
 
 #include "Mqtt5ClientFilterConfigWidget.h"
 
+#include "Mqtt5ClientFilterSubConfigWidget.h"
 #include "Mqtt5ClientFilterTopicAliasWidget.h"
 
 #include <cassert>
@@ -30,6 +31,13 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 {
     m_ui.setupUi(this);
 
+    auto subsLayout = new QVBoxLayout;
+    m_ui.m_subsWidget->setLayout(subsLayout);
+
+    for (auto& subConfig : m_filter.config().m_subscribes) {
+        addSubscribeWidget(subConfig);
+    }    
+
     auto topicAliasesLayout = new QVBoxLayout;
     m_ui.m_topicAliaseWidget->setLayout(topicAliasesLayout);
 
@@ -42,12 +50,11 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
     m_ui.m_usernameLineEdit->setText(m_filter.config().m_username);
     m_ui.m_passwordLineEdit->setText(m_filter.config().m_password);
     m_ui.m_cleanStartComboBox->setCurrentIndex(static_cast<int>(m_filter.config().m_forcedCleanStart));
-    m_ui.m_subTopicsLineEdit->setText(m_filter.config().m_subTopics);
-    m_ui.m_subQosSpinBox->setValue(m_filter.config().m_subQos);
     m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
     m_ui.m_pubQosSpinBox->setValue(m_filter.config().m_pubQos);
     m_ui.m_respTopicLineEdit->setText(m_filter.config().m_respTopic);
 
+    refreshSubscribes();
     refreshTopicAliases();
 
     connect(
@@ -71,14 +78,6 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
         this, &Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated);           
 
     connect(
-        m_ui.m_subTopicsLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::subTopicsUpdated);        
-
-    connect(
-        m_ui.m_subQosSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::subQosUpdated);           
-
-    connect(
         m_ui.m_pubTopicLineEdit, &QLineEdit::textChanged,
         this, &Mqtt5ClientFilterConfigWidget::pubTopicUpdated);        
 
@@ -88,7 +87,11 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
     connect(
         m_ui.m_respTopicLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);     
+        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);   
+
+    connect(
+        m_ui.m_addSubPushButton, &QPushButton::clicked,
+        this, &Mqtt5ClientFilterConfigWidget::addSubscribe);           
 
     connect(
         m_ui.m_addTopicAliasPushButton, &QPushButton::clicked,
@@ -123,18 +126,6 @@ void Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated(int val)
     m_filter.config().m_forcedCleanStart = (val > 0);
 }
 
-void Mqtt5ClientFilterConfigWidget::subTopicsUpdated(const QString& val)
-{
-    m_filter.config().m_subTopics = val;
-    m_filter.forceCleanStart();
-}
-
-void Mqtt5ClientFilterConfigWidget::subQosUpdated(int val)
-{
-    m_filter.config().m_subQos = static_cast<unsigned>(val);
-    m_filter.forceCleanStart();
-}
-
 void Mqtt5ClientFilterConfigWidget::pubTopicUpdated(const QString& val)
 {
     m_filter.config().m_pubTopic = val;
@@ -150,12 +141,42 @@ void Mqtt5ClientFilterConfigWidget::respTopicUpdated(const QString& val)
     m_filter.config().m_respTopic = val;
 }
 
+void Mqtt5ClientFilterConfigWidget::addSubscribe()
+{
+    auto& subs = m_filter.config().m_subscribes;
+    subs.resize(subs.size() + 1U);
+    addSubscribeWidget(subs.back());
+    refreshSubscribes();
+}
+
 void Mqtt5ClientFilterConfigWidget::addTopicAlias()
 {
     auto& aliases = m_filter.config().m_topicAliases;
     aliases.resize(aliases.size() + 1U);
     addTopicAliasWidget(aliases.back());
     refreshTopicAliases();
+}
+
+void Mqtt5ClientFilterConfigWidget::refreshSubscribes()
+{
+    bool subscribesVisible = !m_filter.config().m_subscribes.empty();
+    m_ui.m_subsWidget->setVisible(subscribesVisible);
+}
+
+void Mqtt5ClientFilterConfigWidget::addSubscribeWidget(SubConfig& config)
+{
+    auto* widget = new Mqtt5ClientFilterSubConfigWidget(m_filter, config, this);
+    connect(
+        widget, &QObject::destroyed,
+        this,
+        [this](QObject*)
+        {
+            refreshSubscribes();
+        });
+
+    auto* subsLayout = qobject_cast<QVBoxLayout*>(m_ui.m_subsWidget->layout());
+    assert(subsLayout != nullptr);
+    subsLayout->addWidget(widget); 
 }
 
 void Mqtt5ClientFilterConfigWidget::refreshTopicAliases()

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "ui_Mqtt5ClientFilterConfigWidget.h"
+#include "ui_Mqtt5ClientFilterSubConfigWidget.h"
 
 #include "Mqtt5ClientFilter.h"
 
@@ -28,39 +28,29 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
-class Mqtt5ClientFilterConfigWidget : public QWidget
+class Mqtt5ClientFilterSubConfigWidget : public QWidget
 {
     Q_OBJECT
     using Base = QWidget;
 
 public:
-    explicit Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& filter, QWidget* parentObj = nullptr);
-    ~Mqtt5ClientFilterConfigWidget() noexcept;
+    using SubConfig = Mqtt5ClientFilter::SubConfig;
+
+    explicit Mqtt5ClientFilterSubConfigWidget(Mqtt5ClientFilter& filter, SubConfig& config, QWidget* parentObj = nullptr);
+    ~Mqtt5ClientFilterSubConfigWidget() noexcept = default;
 
 private slots:
-    void respTimeoutUpdated(int val);
-    void clientIdUpdated(const QString& val);
-    void usernameUpdated(const QString& val);
-    void passwordUpdated(const QString& val);
-    void forcedCleanStartUpdated(int val);
-    void pubTopicUpdated(const QString& val);
-    void pubQosUpdated(int val);
-    void respTopicUpdated(const QString& val);
-    void addSubscribe();
-    void addTopicAlias();
+    void topicUpdated(const QString& val);
+    void maxQosUpdated(int val);
+    void noLocalUpdated(int val);
+    void retainAsPublishedUpdated(int val);
+    void retainHandlingUpdated(int val);
+    void delClicked(bool checked);
 
 private:
-    using SubConfig = Mqtt5ClientFilter::SubConfig;
-    using TopicAliasConfig = Mqtt5ClientFilter::TopicAliasConfig;
-
-    void refreshSubscribes();
-    void addSubscribeWidget(SubConfig& config);    
-
-    void refreshTopicAliases();
-    void addTopicAliasWidget(TopicAliasConfig& config);
-
     Mqtt5ClientFilter& m_filter;
-    Ui::Mqtt5ClientFilterConfigWidget m_ui;
+    SubConfig& m_config;
+    Ui::Mqtt5ClientFilterSubConfigWidget m_ui;
 };
 
 }  // namespace cc_plugin_mqtt5_client_filter
