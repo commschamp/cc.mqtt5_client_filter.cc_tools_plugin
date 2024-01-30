@@ -20,6 +20,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QDateTime>
 #include <QtCore/QList>
+#include <QtCore/QVariant>
 
 #include <cassert>
 #include <cstdint>
@@ -91,6 +92,43 @@ const QString& subIdsProp()
 {
     static const QString Str("mqtt5.sub_ids");
     return Str;
+}
+
+const QString& userPropsProp()
+{
+    static const QString Str("mqtt5.user_props");
+    return Str;
+}
+
+const QString& keySubProp()
+{
+    static const QString Str("key");
+    return Str;
+}
+
+const QString& valueSubProp()
+{
+    static const QString Str("value");
+    return Str;
+}
+
+QVariantMap toVariantMap(const CC_Mqtt5UserProp& prop)
+{
+    QVariantMap map;
+    map[keySubProp()] = QString(prop.m_key);
+    map[valueSubProp()] = QString(prop.m_value);
+    return map;
+}
+
+QByteArray parseBinDataStr(const QString& str)
+{
+    QByteArray result;
+    for (auto idx = 0; idx < str.size(); ++idx) {
+        auto byteStr = str.mid(idx, 2);
+        result.append(static_cast<char>(byteStr.toUInt(nullptr, 16)));
+    }
+
+    return result;
 }
 
 } // namespace 
@@ -217,17 +255,31 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     basicConfig.m_data = dataPtr->m_data.data();
     basicConfig.m_dataLen = static_cast<decltype(basicConfig.m_dataLen)>(dataPtr->m_data.size());
     basicConfig.m_qos = static_cast<decltype(basicConfig.m_qos)>(qos);    
+    basicConfig.m_retain = props[retainedProp()].value<bool>();
     ec = ::cc_mqtt5_client_publish_config_basic(publish, &basicConfig);
     if (ec != CC_Mqtt5ErrorCode_Success) {
         reportError(tr("Failed to configure MQTT5 publish with ec=") + QString::number(ec));
         return m_sendData;
     }    
 
-    // TODO: configure properties
-
     auto respTopic = m_config.m_respTopic.toStdString();
+    if (props.contains(responseTopicProp())) {
+        respTopic = props.value(responseTopicProp()).toString().toStdString();
+    }
+
+    auto contentType = props.value(contentTypeProp()).toString().toStdString();
+
+    auto correlationData = parseBinDataStr(props.value(correlationDataProp()).toString());
+
+    bool hasFormat = props.contains(formatProp());
+    bool hasExpiryInterval = props.contains(expiryIntervalProp());
+
     bool hasExtra = 
-        (!respTopic.empty());
+        (!respTopic.empty()) || 
+        (!contentType.empty()) ||
+        (!correlationData.isEmpty()) ||
+        (hasFormat) || 
+        (hasExpiryInterval);
 
     if (hasExtra) {
         auto extraConfig = CC_Mqtt5PublishExtraConfig();
@@ -237,10 +289,55 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
             extraConfig.m_responseTopic = respTopic.c_str();
         }
 
+        if (!contentType.empty()) {
+            extraConfig.m_contentType = contentType.c_str();
+        }
+
+        if (!correlationData.isEmpty()) {
+            extraConfig.m_correlationData = reinterpret_cast<const std::uint8_t*>(correlationData.constData());
+            extraConfig.m_correlationDataLen = static_cast<decltype(extraConfig.m_correlationDataLen)>(correlationData.size());
+        }
+
+        if (hasFormat) {
+            extraConfig.m_format = static_cast<decltype(extraConfig.m_format)>(props.value(formatProp()).toUInt());
+        }
+
+        if (hasExpiryInterval) {
+            extraConfig.m_messageExpiryInterval = props.value(formatProp()).toUInt();
+        }        
+
         ec = ::cc_mqtt5_client_publish_config_extra(publish, &extraConfig);
         if (ec != CC_Mqtt5ErrorCode_Success) {
             reportError(tr("Failed to configure extra properties for MQTT5 publish with ec=") + QString::number(ec));
         }           
+    }
+
+    auto userPropsVar = props.value(userPropsProp());
+    if (userPropsVar.isValid()) {
+        auto userProps = userPropsVar.value<QVariantList>();
+        for (auto& propMapVar : userProps) {
+            auto map = propMapVar.value<QVariantMap>();
+            auto keyVar = map.value(keySubProp());
+            auto valueVar = map.value(valueSubProp());
+
+            if ((!keyVar.isValid()) || (!valueVar.isValid())) {
+                reportError("Invalid user property configuration in message extra properties, ignoring");
+                continue;
+            }
+
+            auto key = keyVar.value<QString>().toStdString();
+            auto value = valueVar.value<QString>().toStdString();
+
+            CC_Mqtt5UserProp prop;
+            prop.m_key = key.c_str();
+            prop.m_value = value.c_str();
+
+            ec = ::cc_mqtt5_client_publish_add_user_prop(publish, &prop);
+            if (ec != CC_Mqtt5ErrorCode_Success) {
+                reportError(tr("Failed to add publish user property with ec=") + QString::number(ec));
+                continue;
+            }            
+        }
     }
 
     m_sendDataPtr = std::move(dataPtr);
@@ -419,7 +516,15 @@ void Mqtt5ClientFilter::messageReceivedInternal(const CC_Mqtt5MessageInfo& info)
         props[subIdsProp()] = QVariant::fromValue(QList<int>(info.m_subIds, info.m_subIds + info.m_subIdsCount));
     }    
 
-    // TODO: user props
+    if (info.m_userPropsCount > 0U) {
+        assert(info.m_userProps != nullptr);
+        QVariantList userProps;
+        for (auto idx = 0U; idx < info.m_userPropsCount; ++idx) {
+            userProps.append(toVariantMap(info.m_userProps[idx]));
+        }
+
+        props[userPropsProp()] = QVariant::fromValue(userProps);
+    }
 
     m_recvData.append(std::move(dataInfo));
 }
@@ -464,6 +569,10 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
     sendPendingData();
 
     if (response->m_sessionPresent) {
+        return;
+    }
+
+    if (m_config.m_subscribes.empty()) {
         return;
     }
 
