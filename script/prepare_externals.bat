@@ -14,6 +14,7 @@ rem CC_MQTT5_LIBS_TAG - (Optional) Tag of the cc.mqtt5.libs
 rem COMMON_INSTALL_DIR - (Optional) Common directory to perform installations
 rem COMMON_BUILD_TYPE - (Optional) CMake build type
 rem COMMON_CXX_STANDARD - (Optional) CMake C++ standard
+rem COMMON_QT_VER - (Optional) common Qt major version
 
 rem -----------------------------------------------------
 
@@ -42,6 +43,8 @@ if [%CC_MQTT5_LIBS_TAG%] == [] set CC_MQTT5_LIBS_TAG="master"
 if [%COMMON_BUILD_TYPE%] == [] set COMMON_BUILD_TYPE=Debug
 
 if [%COMMON_CXX_STANDARD%] == [] set COMMON_CXX_STANDARD=17
+
+if [%COMMON_QT_VER%] == [] set COMMON_QT_VER=5
 
 set COMMS_SRC_DIR=%EXTERNALS_DIR%/comms
 set COMMS_BUILD_DIR=%BUILD_DIR%/externals/comms/build
@@ -110,7 +113,7 @@ git pull --all
 echo "Building cc_tools_qt ..."
 mkdir "%CC_TOOLS_QT_BUILD_DIR%"
 cd %CC_TOOLS_QT_BUILD_DIR%
-cmake -G %GENERATOR% -S %CC_TOOLS_QT_SRC_DIR% -B %CC_TOOLS_QT_BUILD_DIR% -DCMAKE_INSTALL_PREFIX=%CC_TOOLS_QT_INSTALL_DIR% -DCMAKE_BUILD_TYPE=%COMMON_BUILD_TYPE% -DCC_TOOLS_QT_BUILD_APPS=OFF -DCMAKE_PREFIX_PATH=%COMMS_INSTALL_DIR%;%QTDIR% -DCMAKE_CXX_STANDARD=%COMMON_CXX_STANDARD%
+cmake -G %GENERATOR% -S %CC_TOOLS_QT_SRC_DIR% -B %CC_TOOLS_QT_BUILD_DIR% -DCMAKE_INSTALL_PREFIX=%CC_TOOLS_QT_INSTALL_DIR% -DCMAKE_BUILD_TYPE=%COMMON_BUILD_TYPE% -DCC_TOOLS_QT_BUILD_APPS=OFF -DCMAKE_PREFIX_PATH=%COMMS_INSTALL_DIR%;%QTDIR% -DCMAKE_CXX_STANDARD=%COMMON_CXX_STANDARD% -DCC_TOOLS_QT_MAJOR_QT_VERSION=%COMMON_QT_VER%
 if %errorlevel% neq 0 exit /b %errorlevel%
 cmake --build %CC_TOOLS_QT_BUILD_DIR% --config %COMMON_BUILD_TYPE% --target install
 if %errorlevel% neq 0 exit /b %errorlevel%

@@ -1,5 +1,5 @@
 {
-    "name" : "MQTT5 Client Filter",
+    "name" : "CC MQTT5 Client Filter",
     "desc" : [
         "This filter provides MQTT5 transport filtering for the used protocol."
     ],

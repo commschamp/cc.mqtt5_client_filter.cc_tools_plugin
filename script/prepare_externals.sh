@@ -19,6 +19,7 @@
 # COMMON_INSTALL_DIR - (Optional) Common directory to perform installations
 # COMMON_BUILD_TYPE - (Optional) CMake build type
 # COMMON_CXX_STANDARD - (Optional) CMake C++ standard
+# COMMON_QT_VER - (Optional) common Qt major version
 
 #####################################
 
@@ -69,6 +70,10 @@ fi
 
 if [ -z "${COMMON_CXX_STANDARD}" ]; then
     COMMON_CXX_STANDARD=17
+fi
+
+if [ -z "${COMMON_QT_VER}" ]; then
+    COMMON_QT_VER=5
 fi
 
 COMMS_SRC_DIR=${EXTERNALS_DIR}/comms
@@ -144,7 +149,7 @@ function build_cc_tools_qt() {
 
     echo "Building ${proj_name} ..."
     mkdir -p ${CC_TOOLS_QT_BUILD_DIR}
-    cmake -S ${CC_TOOLS_QT_SRC_DIR} -B ${CC_TOOLS_QT_BUILD_DIR} -DCMAKE_INSTALL_PREFIX=${CC_TOOLS_QT_INSTALL_DIR} -DCMAKE_BUILD_TYPE=${COMMON_BUILD_TYPE} -DCC_TOOLS_QT_BUILD_APPS=OFF -DCMAKE_PREFIX_PATH=${COMMS_INSTALL_DIR} -DCMAKE_CXX_STANDARD=${COMMON_CXX_STANDARD}
+    cmake -S ${CC_TOOLS_QT_SRC_DIR} -B ${CC_TOOLS_QT_BUILD_DIR} -DCMAKE_INSTALL_PREFIX=${CC_TOOLS_QT_INSTALL_DIR} -DCMAKE_BUILD_TYPE=${COMMON_BUILD_TYPE} -DCC_TOOLS_QT_BUILD_APPS=OFF -DCMAKE_PREFIX_PATH=${COMMS_INSTALL_DIR} -DCMAKE_CXX_STANDARD=${COMMON_CXX_STANDARD} -DCC_TOOLS_QT_MAJOR_QT_VERSION=${COMMON_QT_VER}
     cmake --build ${CC_TOOLS_QT_BUILD_DIR} --config ${COMMON_BUILD_TYPE} --target install ${procs_param}
 }
 

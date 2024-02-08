@@ -54,6 +54,7 @@ install:
     - set COMMON_INSTALL_DIR=%BUILD_DIR%\install
     - set COMMON_BUILD_TYPE=%CONFIGURATION%
     - set COMMON_CXX_STANDARD=%CPP_STD%
+    - set COMMON_QT_VER=%QT_MAJOR%
     - set GENERATOR="%CMAKE_GENERATOR%"
     - set PLATFORM="%CMAKE_PLATFORM%"
     - call script\prepare_externals.bat

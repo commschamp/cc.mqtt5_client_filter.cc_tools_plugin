@@ -43,6 +43,7 @@ jobs:
         COMMON_INSTALL_DIR: ${{runner.workspace}}/build/install
         COMMON_BUILD_TYPE: ${{matrix.type}}
         COMMON_CXX_STANDARD: ${{matrix.cpp}}
+        COMMON_QT_VER: ${{matrix.qt_ver}}
         COMMS_TAG: ${{env.COMMS_TAG}}
         CC_TOOLS_QT_TAG: ${{env.CC_TOOLS_QT_TAG}}
         CC_MQTT5_GENERATED_TAG: ${{env.CC_MQTT5_GENERATED_TAG}}
@@ -108,6 +109,7 @@ jobs:
         COMMON_INSTALL_DIR: ${{runner.workspace}}/build/install
         COMMON_BUILD_TYPE: ${{matrix.type}}
         COMMON_CXX_STANDARD: ${{matrix.cpp}}
+        COMMON_QT_VER: ${{matrix.qt_ver}}
         COMMS_TAG: ${{env.COMMS_TAG}}
         CC_TOOLS_QT_TAG: ${{env.CC_TOOLS_QT_TAG}}
         CC_MQTT5_GENERATED_TAG: ${{env.CC_MQTT5_GENERATED_TAG}}
