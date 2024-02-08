@@ -31,13 +31,13 @@ if [%CC_TOOLS_QT_REPO%] == [] set CC_TOOLS_QT_REPO="https://github.com/commscham
 
 if [%CC_TOOLS_QT_TAG%] == [] set CC_TOOLS_QT_TAG="master"
 
-if [%CC_MQTT5_GENERATED_REPO%] == [] set CC_TOOLS_QT_REPO="https://github.com/commschamp/cc.mqtt5.generated.git"
+if [%CC_MQTT5_GENERATED_REPO%] == [] set CC_MQTT5_GENERATED_REPO="https://github.com/commschamp/cc.mqtt5.generated.git"
 
-if [%CC_MQTT5_GENERATED_TAG%] == [] set CC_TOOLS_QT_TAG="master"
+if [%CC_MQTT5_GENERATED_TAG%] == [] set CC_MQTT5_GENERATED_TAG="master"
 
-if [%CC_MQTT5_LIBS_REPO%] == [] set CC_TOOLS_QT_REPO="https://github.com/commschamp/cc.mqtt5.libs.git"
+if [%CC_MQTT5_LIBS_REPO%] == [] set CC_MQTT5_LIBS_REPO="https://github.com/commschamp/cc.mqtt5.libs.git"
 
-if [%CC_MQTT5_LIBS_TAG%] == [] set CC_TOOLS_QT_TAG="master"
+if [%CC_MQTT5_LIBS_TAG%] == [] set CC_MQTT5_LIBS_TAG="master"
 
 if [%COMMON_BUILD_TYPE%] == [] set COMMON_BUILD_TYPE=Debug
 
