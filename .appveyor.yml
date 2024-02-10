@@ -62,7 +62,7 @@ install:
 build_script:
     - echo ------------------------- Building Project -------------------------
     - cd %BUILD_DIR%
-    - cmake .. -DCMAKE_BUILD_TYPE=%CONFIGURATION% -G "%CMAKE_GENERATOR%" %PLATFORM_PARAM% -DCMAKE_INSTALL_PREFIX="%COMMON_INSTALL_DIR%" ^
+    - cmake .. -DCMAKE_BUILD_TYPE=%CONFIGURATION% -G "%CMAKE_GENERATOR%" %CMAKE_PLATFORM% -DCMAKE_INSTALL_PREFIX="%COMMON_INSTALL_DIR%" ^
         -DCMAKE_PREFIX_PATH="%COMMON_INSTALL_DIR%;%QTDIR%" -DCMAKE_CXX_STANDARD=%CPP_STD% ^
         -DOPT_MAJOR_QT_VERSION=%QT_MAJOR%
     - cmake --build . --config %CONFIGURATION% --target install
