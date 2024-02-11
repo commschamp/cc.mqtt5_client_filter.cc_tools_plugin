@@ -1,17 +1,4 @@
-IF "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" (
-    set TOOLCHAIN=msvc15
-    set QT_SUBDIR=msvc2017
-    set QT_VER=5.13
-    set CMAKE_GENERATOR=NMake Makefiles
-    IF "%PLATFORM%"=="x86" (
-        echo Performing x86 build in VS2017
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-    ) ELSE (
-        echo Performing amd64 build in VS2017
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-    )
-    
-) ELSE IF "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" (
+IF "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" (
     set TOOLCHAIN=msvc16
     set QT_SUBDIR=msvc2019
     set CMAKE_GENERATOR=Visual Studio 16 2019
