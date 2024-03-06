@@ -1,7 +1,17 @@
 {
     "name" : "CC MQTT5 Client Filter",
     "desc" : [
-        "This filter provides MQTT5 transport filtering for the used protocol."
+        "This filter provides MQTT5 transport filtering for the used protocol.\n\n",
+        "Supported overriding properties:\n",
+        "    { \"mqtt5.topic\": \"some/topic\" } - Override publish topic\n",
+        "    { \"mqtt5.qos\": 1 } - Override publish QoS\n",
+        "    { \"mqtt5.retained\": true } - Send retained message\n",
+        "    { \"mqtt5.format\": 1 } - Set content format\n",
+        "    { \"mqtt5.expiry_interval\": 10 } - Set message expiry interval\n",
+        "    { \"mqtt5.response_topic\": \"some/topic\" } - Set response topic\n",
+        "    { \"mqtt5.content_type\": \"some_content_type\" } - Set content type\n",
+        "    { \"mqtt5.correlation_data\": \"0123456789abcdef\" } - Set hex bytes of the correlation data\n",
+        "    { \"mqtt5.user_props\": [{\"key\": \"key1\", \"value\": \"value1\" }, ...] - Set user properties\n"
     ],
     "type" : "filter"
 }
