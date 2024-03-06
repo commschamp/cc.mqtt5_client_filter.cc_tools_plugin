@@ -19,6 +19,7 @@
 #pragma once
 
 #include <cc_tools_qt/Filter.h>
+#include <cc_tools_qt/version.h>
 
 #include <cc_mqtt5_client/client.h>
 
@@ -32,6 +33,7 @@
 #include <string>
 
 static_assert(CC_MQTT5_CLIENT_MAKE_VERSION(0, 3, 1) <= CC_MQTT5_CLIENT_VERSION, "The version of the cc_mqtt5_client library is too old");
+static_assert(CC_TOOLS_QT_MAKE_VERSION(5, 1, 0) <= CC_TOOLS_QT_VERSION, "The version of the cc_tools_qt library is too old");
 
 namespace cc_plugin_mqtt5_client_filter
 {
