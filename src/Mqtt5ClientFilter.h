@@ -31,6 +31,8 @@
 #include <memory>
 #include <string>
 
+static_assert(CC_MQTT5_CLIENT_MAKE_VERSION(0, 3, 1) <= CC_MQTT5_CLIENT_VERSION, "The version of the cc_mqtt5_client library is too old");
+
 namespace cc_plugin_mqtt5_client_filter
 {
 
