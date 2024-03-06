@@ -6,11 +6,20 @@ option (OPT_WARN_AS_ERR "Treat warning as error" ON)
 option (OPT_USE_CCACHE "Use ccache on UNIX systems if it's available" ON)
 
 # Extra configuration variables
-set (CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to use")
-set (OPT_MAJOR_QT_VERSION 5 CACHE STRING "Major Qt version")
+# OPT_MAJOR_QT_VERSION - Major Qt version. Defaults to 5
 
+# Extra standard CMake configuration
+# CMAKE_CXX_STANDARD - C++ standard to use, defaults (and min required) to 17
 
 #######################################################################
+
+if ("${CMAKE_CXX_STANDARD}" STREQUAL "")
+    set (CMAKE_CXX_STANDARD 17)
+endif ()
+
+if ("${OPT_MAJOR_QT_VERSION}" STREQUAL "")
+    set (OPT_MAJOR_QT_VERSION 5)
+endif ()
 
 find_package(LibComms REQUIRED NO_MODULE)
 find_package(cc_tools_qt REQUIRED NO_MODULE)
