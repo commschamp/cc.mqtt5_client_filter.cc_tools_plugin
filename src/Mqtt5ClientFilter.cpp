@@ -34,7 +34,6 @@ namespace cc_plugin_mqtt5_client_filter
 namespace 
 {
 
-
 inline Mqtt5ClientFilter* asThis(void* data)
 {
     return reinterpret_cast<Mqtt5ClientFilter*>(data);
@@ -46,15 +45,33 @@ const QString& topicProp()
     return Str;
 }
 
+const QString& aliasTopicProp()
+{
+    static const QString Str("mqtt.topic");
+    return Str;
+}
+
 const QString& qosProp()
 {
     static const QString Str("mqtt5.qos");
     return Str;
 }
 
+const QString& aliasQosProp()
+{
+    static const QString Str("mqtt.qos");
+    return Str;
+}
+
 const QString& retainedProp()
 {
     static const QString Str("mqtt5.retained");
+    return Str;    
+}
+
+const QString& aliasRetainedProp()
+{
+    static const QString Str("mqtt.retained");
     return Str;    
 }
 
@@ -131,6 +148,100 @@ QByteArray parseBinDataStr(const QString& str)
     return result;
 }
 
+std::string getOutgoingTopic(const QVariantMap& props, const QString configVal)
+{
+    if (props.contains(topicProp())) {
+        return props[topicProp()].value<QString>().toStdString();
+    }
+
+    if (props.contains(aliasTopicProp())) {
+        return props[aliasTopicProp()].value<QString>().toStdString();
+    }
+
+    return configVal.toStdString();
+}
+
+int getOutgoingQos(const QVariantMap& props, int configVal)
+{
+    if (props.contains(qosProp())) {
+        return props[qosProp()].value<int>();
+    }
+
+    if (props.contains(aliasQosProp())) {
+        return props[aliasQosProp()].value<int>();
+    }
+
+    return configVal;
+}
+
+bool getOutgoingRetained(const QVariantMap& props)
+{
+    if (props.contains(retainedProp())) {
+        return props[retainedProp()].value<bool>();
+    }
+
+    if (props.contains(aliasRetainedProp())) {
+        return props[aliasRetainedProp()].value<bool>();
+    }    
+
+    return false;
+}
+
+const QString& errorCodeStr(CC_Mqtt5ErrorCode ec)
+{
+    static const QString Map[] = {
+        /* CC_Mqtt5ErrorCode_Success */ "Success",
+        /* CC_Mqtt5ErrorCode_InternalError */ "Internal Error",
+        /* CC_Mqtt5ErrorCode_NotIntitialized */ "Not Initialized",
+        /* CC_Mqtt5ErrorCode_Busy */ "Busy",
+        /* CC_Mqtt5ErrorCode_NotConnected */ "Not Connected",
+        /* CC_Mqtt5ErrorCode_AlreadyConnected */ "Already Connected",
+        /* CC_Mqtt5ErrorCode_BadParam */ "Bad Parameter",
+        /* CC_Mqtt5ErrorCode_InsufficientConfig */ "Insufficient Config",
+        /* CC_Mqtt5ErrorCode_OutOfMemory */ "Out of Memory",
+        /* CC_Mqtt5ErrorCode_BufferOverflow */ "Buffer Overflow",
+        /* CC_Mqtt5ErrorCode_NotSupported */ "Feature is Not Supported",
+        /* CC_Mqtt5ErrorCode_RetryLater */ "Retry later",
+        /* CC_Mqtt5ErrorCode_Terminating */ "Terminating",
+        /* CC_Mqtt5ErrorCode_NetworkDisconnected */ "Network is Disconnected",
+        /* CC_Mqtt5ErrorCode_NotAuthenticated */ "Not Authenticated",
+    };
+    static const std::size_t MapSize = std::extent<decltype(Map)>::value;
+    static_assert(MapSize == CC_Mqtt5ErrorCode_ValuesLimit);
+
+    auto idx = static_cast<unsigned>(ec);
+    if (MapSize <= idx) {
+        static const QString UnknownStr("Unknown");
+        return UnknownStr;
+    }
+
+    return Map[idx];
+}
+
+const QString& statusStr(CC_Mqtt5AsyncOpStatus status)
+{
+    static const QString Map[] = {
+        /* CC_Mqtt5AsyncOpStatus_Complete */ "Complete",
+        /* CC_Mqtt5AsyncOpStatus_InternalError */ "Internal Error",
+        /* CC_Mqtt5AsyncOpStatus_Timeout */ "Timeout",
+        /* CC_Mqtt5AsyncOpStatus_ProtocolError */ "Protocol Error",
+        /* CC_Mqtt5AsyncOpStatus_Aborted */ "Aborted",
+        /* CC_Mqtt5AsyncOpStatus_BrokerDisconnected */ "Broker Disconnected",
+        /* CC_Mqtt5AsyncOpStatus_OutOfMemory */ "Out of Memory",
+        /* CC_Mqtt5AsyncOpStatus_BadParam */ "Bad Parameter",
+    };
+    static const std::size_t MapSize = std::extent<decltype(Map)>::value;
+    static_assert(MapSize == CC_Mqtt5AsyncOpStatus_ValuesLimit);
+
+    auto idx = static_cast<unsigned>(status);
+    if (MapSize <= idx) {
+        static const QString UnknownStr("Unknown");
+        return UnknownStr;
+    }
+
+    return Map[idx];
+}
+
 } // namespace 
     
 
@@ -187,13 +298,13 @@ void Mqtt5ClientFilter::stopImpl()
     ::cc_mqtt5_client_disconnect_init_config(&config);
     auto ec = ::cc_mqtt5_client_disconnect_config(disconnect, &config);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to configure MQTT5 disconnect with ec=") + QString::number(ec));
+        reportError(tr("Failed to configure MQTT5 disconnect with error: ") + errorCodeStr(ec));
         return;
     }    
 
     ec = cc_mqtt5_client_disconnect_send(disconnect);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to send disconnect with ec=") + QString::number(ec));
+        reportError(tr("Failed to send disconnect with error: ") + errorCodeStr(ec));
         return;
     }    
 }
@@ -224,27 +335,20 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
         return m_sendData;
     }
 
-    std::string topic = m_config.m_pubTopic.toStdString();
     auto& props = dataPtr->m_extraProperties;
-    if (props.contains(topicProp())) {
-        topic = props[topicProp()].value<QString>().toStdString();
-    }
-    else {
-        props[topicProp()] = QString::fromStdString(topic);
-    }
+    std::string topic = getOutgoingTopic(props, m_config.m_pubTopic);
+    props[topicProp()] = QString::fromStdString(topic);
+    
+    auto qos = getOutgoingQos(props, m_config.m_pubQos);
+    props[qosProp()] = qos;
 
-    auto qos = m_config.m_pubQos;
-    if (props.contains(qosProp())) {
-        qos = props[qosProp()].value<int>();
-    }
-    else {
-        props[qosProp()] = qos;
-    }
+    auto retained = getOutgoingRetained(props);
+    props[retainedProp()] = retained;
 
     CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
     CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
     if (publish == NULL) {
-        reportError(tr("Publish allocation failed with ec=") + QString::number(ec));
+        reportError(tr("Publish allocation failed with error: ") + errorCodeStr(ec));
         return m_sendData;
     }
 
@@ -255,10 +359,10 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     basicConfig.m_data = dataPtr->m_data.data();
     basicConfig.m_dataLen = static_cast<decltype(basicConfig.m_dataLen)>(dataPtr->m_data.size());
     basicConfig.m_qos = static_cast<decltype(basicConfig.m_qos)>(qos);    
-    basicConfig.m_retain = props[retainedProp()].value<bool>();
+    basicConfig.m_retain = retained;
     ec = ::cc_mqtt5_client_publish_config_basic(publish, &basicConfig);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to configure MQTT5 publish with ec=") + QString::number(ec));
+        reportError(tr("Failed to configure MQTT5 publish with error: ") + errorCodeStr(ec));
         return m_sendData;
     }    
 
@@ -308,7 +412,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
         ec = ::cc_mqtt5_client_publish_config_extra(publish, &extraConfig);
         if (ec != CC_Mqtt5ErrorCode_Success) {
-            reportError(tr("Failed to configure extra properties for MQTT5 publish with ec=") + QString::number(ec));
+            reportError(tr("Failed to configure extra properties for MQTT5 publish with error: ") + errorCodeStr(ec));
         }           
     }
 
@@ -334,7 +438,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
             ec = ::cc_mqtt5_client_publish_add_user_prop(publish, &prop);
             if (ec != CC_Mqtt5ErrorCode_Success) {
-                reportError(tr("Failed to add publish user property with ec=") + QString::number(ec));
+                reportError(tr("Failed to add publish user property with error: ") + errorCodeStr(ec));
                 continue;
             }            
         }
@@ -344,7 +448,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
     ec = ::cc_mqtt5_client_publish_send(publish, &publishCompleteCb, this);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to send MQTT5 publish with ec=") + QString::number(ec));
+        reportError(tr("Failed to send MQTT5 publish with error: ") + errorCodeStr(ec));
         m_sendDataPtr.reset();
         return m_sendData;        
     }
@@ -553,7 +657,7 @@ unsigned Mqtt5ClientFilter::cancelTickProgramInternal()
 void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response)
 {
     if (status != CC_Mqtt5AsyncOpStatus_Complete) {
-        reportError(tr("Failed to connect to MQTT5 broker, status=") + QString::number(status));
+        reportError(tr("Failed to connect to MQTT5 broker with status: ") + statusStr(status));
         return;
     }
 
@@ -611,7 +715,7 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
 void Mqtt5ClientFilter::subscribeCompleteInternal([[maybe_unused]] CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response)
 {
     if (status != CC_Mqtt5AsyncOpStatus_Complete) {
-        reportError(tr("Failed to subsribe to MQTT5 topics, status=") + QString::number(status));
+        reportError(tr("Failed to subsribe to MQTT5 topics with status: ") + statusStr(status));
         return;
     }  
 
@@ -628,7 +732,7 @@ void Mqtt5ClientFilter::subscribeCompleteInternal([[maybe_unused]] CC_Mqtt5Subsc
 void Mqtt5ClientFilter::publishCompleteInternal([[maybe_unused]] CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response)
 {
     if (status != CC_Mqtt5AsyncOpStatus_Complete) {
-        reportError(tr("Failed to publish to MQTT5 broker, status=") + QString::number(status));
+        reportError(tr("Failed to publish to MQTT5 broker with status: ") + statusStr(status));
         return;
     }
 

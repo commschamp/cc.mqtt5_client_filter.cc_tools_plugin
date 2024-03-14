@@ -2,7 +2,7 @@
     "name" : "CC MQTT5 Client Filter",
     "desc" : [
         "This filter provides MQTT5 transport filtering for the used protocol.\n\n",
-        "Supported overriding properties:\n",
+        "Supported message overriding properties:\n",
         "    { \"mqtt5.topic\": \"some/topic\" } - Override publish topic\n",
         "    { \"mqtt5.qos\": 1 } - Override publish QoS\n",
         "    { \"mqtt5.retained\": true } - Send retained message\n",
@@ -11,7 +11,10 @@
         "    { \"mqtt5.response_topic\": \"some/topic\" } - Set response topic\n",
         "    { \"mqtt5.content_type\": \"some_content_type\" } - Set content type\n",
         "    { \"mqtt5.correlation_data\": \"0123456789abcdef\" } - Set hex bytes of the correlation data\n",
-        "    { \"mqtt5.user_props\": [{\"key\": \"key1\", \"value\": \"value1\" }, ...] - Set user properties\n"
+        "    { \"mqtt5.user_props\": [{\"key\": \"key1\", \"value\": \"value1\" }, ...] - Set user properties\n",
+        "    { \"mqtt.topic\": \"some/topic\" } - Same as \"mqtt5.topic\".\n",
+        "    { \"mqtt.qos\": 1 } - Same as \"mqtt5.qos\".\n",
+        "    { \"mqtt.retained\": true } - Same as \"mqtt5.retained\".\n"
     ],
     "type" : "filter"
 }
