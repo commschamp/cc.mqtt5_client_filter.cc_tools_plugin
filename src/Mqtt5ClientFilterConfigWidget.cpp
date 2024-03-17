@@ -25,6 +25,25 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
+namespace 
+{
+
+void deleteAllWidgetsFrom(QLayout& layout)
+{
+    while (true) {
+        auto* child = layout.takeAt(0);
+        if (child == nullptr) {
+            break;
+        }
+
+        delete child->widget();
+        delete child;
+    }
+}
+
+} // namespace 
+    
+
 Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& filter, QWidget* parentObj) :
     Base(parentObj),
     m_filter(filter)
@@ -34,28 +53,14 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
     auto subsLayout = new QVBoxLayout;
     m_ui.m_subsWidget->setLayout(subsLayout);
 
-    for (auto& subConfig : m_filter.config().m_subscribes) {
-        addSubscribeWidget(subConfig);
-    }    
-
     auto topicAliasesLayout = new QVBoxLayout;
-    m_ui.m_topicAliaseWidget->setLayout(topicAliasesLayout);
+    m_ui.m_topicAliaseWidget->setLayout(topicAliasesLayout);    
 
-    for (auto& aliasConfig : m_filter.config().m_topicAliases) {
-        addTopicAliasWidget(aliasConfig);
-    }
-    
-    m_ui.m_respTimeoutSpinBox->setValue(m_filter.config().m_respTimeout);
-    m_ui.m_clientIdLineEdit->setText(m_filter.config().m_clientId);
-    m_ui.m_usernameLineEdit->setText(m_filter.config().m_username);
-    m_ui.m_passwordLineEdit->setText(m_filter.config().m_password);
-    m_ui.m_cleanStartComboBox->setCurrentIndex(static_cast<int>(m_filter.config().m_forcedCleanStart));
-    m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
-    m_ui.m_pubQosSpinBox->setValue(m_filter.config().m_pubQos);
-    m_ui.m_respTopicLineEdit->setText(m_filter.config().m_respTopic);
+    refresh();
 
-    refreshSubscribes();
-    refreshTopicAliases();
+    connect(
+        &m_filter, &Mqtt5ClientFilter::sigConfigChanged,
+        this, &Mqtt5ClientFilterConfigWidget::refresh);     
 
     connect(
         m_ui.m_respTimeoutSpinBox, qOverload<int>(&QSpinBox::valueChanged),
@@ -71,7 +76,11 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
     connect(
         m_ui.m_passwordLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::passwordUpdated);        
+        this, &Mqtt5ClientFilterConfigWidget::passwordUpdated); 
+
+    connect(
+        m_ui.m_passwordShowHidePushButton,  &QPushButton::clicked,
+        this, &Mqtt5ClientFilterConfigWidget::passwordShowHideClicked);               
 
     connect(
         m_ui.m_cleanStartComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
@@ -100,6 +109,32 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
 Mqtt5ClientFilterConfigWidget::~Mqtt5ClientFilterConfigWidget() noexcept = default;
 
+void Mqtt5ClientFilterConfigWidget::refresh()
+{
+    deleteAllWidgetsFrom(*(m_ui.m_subsWidget->layout()));
+    deleteAllWidgetsFrom(*(m_ui.m_topicAliaseWidget->layout()));
+
+    for (auto& subConfig : m_filter.config().m_subscribes) {
+        addSubscribeWidget(subConfig);
+    }    
+
+    for (auto& aliasConfig : m_filter.config().m_topicAliases) {
+        addTopicAliasWidget(aliasConfig);
+    }
+
+    m_ui.m_respTimeoutSpinBox->setValue(m_filter.config().m_respTimeout);
+    m_ui.m_clientIdLineEdit->setText(m_filter.config().m_clientId);
+    m_ui.m_usernameLineEdit->setText(m_filter.config().m_username);
+    m_ui.m_passwordLineEdit->setText(m_filter.config().m_password);
+    m_ui.m_cleanStartComboBox->setCurrentIndex(static_cast<int>(m_filter.config().m_forcedCleanStart));
+    m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
+    m_ui.m_pubQosSpinBox->setValue(m_filter.config().m_pubQos);
+    m_ui.m_respTopicLineEdit->setText(m_filter.config().m_respTopic);
+
+    refreshSubscribes();
+    refreshTopicAliases();
+}
+
 void Mqtt5ClientFilterConfigWidget::respTimeoutUpdated(int val)
 {
     m_filter.config().m_respTimeout = static_cast<unsigned>(val);
@@ -107,6 +142,10 @@ void Mqtt5ClientFilterConfigWidget::respTimeoutUpdated(int val)
 
 void Mqtt5ClientFilterConfigWidget::clientIdUpdated(const QString& val)
 {
+    if (m_filter.config().m_clientId == val) {
+        return;
+    }
+
     m_filter.config().m_clientId = val;
     m_filter.forceCleanStart();
 }
@@ -119,6 +158,19 @@ void Mqtt5ClientFilterConfigWidget::usernameUpdated(const QString& val)
 void Mqtt5ClientFilterConfigWidget::passwordUpdated(const QString& val)
 {
     m_filter.config().m_password = val;
+}
+
+void Mqtt5ClientFilterConfigWidget::passwordShowHideClicked(bool checked)
+{
+    auto mode = QLineEdit::Password;
+    auto buttonText = tr("Show");
+    if (checked) {
+        mode = QLineEdit::Normal;
+        buttonText = tr("Hide");
+    }
+    
+    m_ui.m_passwordLineEdit->setEchoMode(mode);
+    m_ui.m_passwordShowHidePushButton->setText(buttonText);    
 }
 
 void Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated(int val)

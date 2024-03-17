@@ -117,6 +117,84 @@ const QString& userPropsProp()
     return Str;
 }
 
+const QString& clientProp()
+{
+    static const QString Str("mqtt5.client");
+    return Str;    
+}
+
+const QString& aliasClientProp()
+{
+    static const QString Str("mqtt.client");
+    return Str;    
+}
+
+const QString& usernameProp()
+{
+    static const QString Str("mqtt5.username");
+    return Str;    
+}
+
+const QString& aliasUsernameProp()
+{
+    static const QString Str("mqtt.username");
+    return Str;    
+}
+
+const QString& passwordProp()
+{
+    static const QString Str("mqtt5.password");
+    return Str;    
+}
+
+const QString& aliasPasswordProp()
+{
+    static const QString Str("mqtt.password");
+    return Str;    
+}
+
+const QString& pubTopicProp()
+{
+    static const QString Str("mqtt5.pub_topic");
+    return Str;    
+}
+
+const QString& aliasPubTopicProp()
+{
+    static const QString Str("mqtt.pub_topic");
+    return Str;    
+}
+
+const QString& pubQosProp()
+{
+    static const QString Str("mqtt5.pub_qos");
+    return Str;    
+}
+
+const QString& aliasPubQosProp()
+{
+    static const QString Str("mqtt.pub_qos");
+    return Str;    
+}
+
+const QString& respTopicProp()
+{
+    static const QString Str("mqtt5.resp_topic");
+    return Str;    
+}
+
+const QString& subscribesProp()
+{
+    static const QString Str("mqtt5.subscribes");
+    return Str;    
+}
+
+const QString& aliasSubscribesProp()
+{
+    static const QString Str("mqtt.subscribes");
+    return Str;    
+}
+
 const QString& keySubProp()
 {
     static const QString Str("key");
@@ -126,6 +204,37 @@ const QString& keySubProp()
 const QString& valueSubProp()
 {
     static const QString Str("value");
+    return Str;
+}
+
+const QString& topicSubProp()
+{
+    static const QString Str("topic");
+    return Str;
+}
+
+const QString& qosSubProp()
+{
+    static const QString Str("qos");
+    return Str;
+}
+
+const QString& noLocalSubProp()
+{
+    static const QString Str("no_local");
+    return Str;
+}
+
+const QString& retainAsPublishedSubProp()
+{
+    static const QString Str("retain_as_published");
+    return Str;
+}
+
+
+const QString& retainHandlingSubProp()
+{
+    static const QString Str("retain_handling");
     return Str;
 }
 
@@ -240,6 +349,33 @@ const QString& statusStr(CC_Mqtt5AsyncOpStatus status)
     }
 
     return Map[idx];
+}
+
+std::vector<std::uint8_t> parsePassword(const QString& password)
+{
+    std::vector<std::uint8_t> result;
+    result.reserve(password.size());
+
+    for (auto idx = 0; idx < password.size();) {
+        if (((idx + 1) < password.size()) && (password[idx] == '\\') && (password[idx + 1] == '\\')) {
+            result.push_back(static_cast<std::uint8_t>('\''));
+            idx += 2;
+            continue;
+        }
+
+        if ((password.size() <= (idx + 4)) || 
+            (password[idx] != '\\') || 
+            (password[idx + 1] != 'x')) {
+            result.push_back(static_cast<std::uint8_t>(password[idx].cell()));
+            idx += 1;
+            continue;
+        }
+
+        result.push_back(static_cast<std::uint8_t>(password.mid(idx + 2, 2).toUInt(nullptr, 16)));
+        idx += 4;
+    }
+
+    return result;
 }
 
 } // namespace 
@@ -468,6 +604,170 @@ void Mqtt5ClientFilter::socketConnectionReportImpl(bool connected)
     socketDisconnected();
 }
 
+void Mqtt5ClientFilter::applyInterPluginConfigImpl(const QVariantMap& props)
+{
+    bool updated = false;
+
+    {
+        static const QString* ClientProps[] = {
+            &aliasClientProp(),
+            &clientProp(),
+        };
+
+        for (auto* p : ClientProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_clientId = var.value<QString>();
+                updated = true;
+            }
+        }
+    }
+
+    {
+        static const QString* UsernameProps[] = {
+            &aliasUsernameProp(),
+            &usernameProp(),
+        };
+
+        for (auto* p : UsernameProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_username = var.value<QString>();
+                updated = true;
+            }
+        }
+    }
+    
+    {
+        static const QString* PasswordProps[] = {
+            &aliasPasswordProp(),
+            &passwordProp(),
+        };
+
+        for (auto* p : PasswordProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_password = var.value<QString>();
+                updated = true;
+            }
+        }  
+    }
+
+    {
+        static const QString* PubTopicProps[] = {
+            &aliasPubTopicProp(),
+            &pubTopicProp(),
+        };
+
+        for (auto* p : PubTopicProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_pubTopic = var.value<QString>();
+                updated = true;
+            }
+        }  
+    }  
+
+    {
+        static const QString* PubQosProps[] = {
+            &aliasPubQosProp(),
+            &pubQosProp(),
+        };
+
+        for (auto* p : PubQosProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<int>())) {
+                m_config.m_pubQos = var.value<int>();
+                updated = true;
+            }
+        }  
+    }  
+
+    {
+        static const QString* RespTopicProps[] = {
+            &respTopicProp(),
+        };
+
+        for (auto* p : RespTopicProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_respTopic = var.value<QString>();
+                updated = true;
+            }
+        }  
+    }       
+
+    {
+        static const QString* SubscribesProps[] = {
+            &aliasSubscribesProp(),
+            &subscribesProp(),
+        };
+
+        for (auto* p : SubscribesProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QVariantList>())) {
+                auto subList = var.value<QVariantList>();
+
+                for (auto idx = 0; idx < subList.size(); ++idx) {
+                    auto& subVar = subList[idx];
+                    if ((!subVar.isValid()) || (!subVar.canConvert<QVariantMap>())) {
+                        continue;
+                    }
+
+                    auto subMap = subVar.value<QVariantMap>();
+                    auto topicVar = subMap.value(topicSubProp());
+                    if ((!topicVar.isValid()) || (!topicVar.canConvert<QString>())) {
+                        continue;
+                    }
+
+                    auto topic = topicVar.value<QString>();
+
+                    auto iter = 
+                        std::find_if(
+                            m_config.m_subscribes.begin(), m_config.m_subscribes.end(),
+                            [&topic](const auto& info)
+                            {
+                                return topic == info.m_topic;
+                            });
+                    
+                    if (iter == m_config.m_subscribes.end()) {
+                        iter = m_config.m_subscribes.insert(m_config.m_subscribes.end(), SubConfig());
+                        iter->m_topic = topic;
+                    }
+
+                    auto& subConfig = *iter;
+                    auto qosVar = subMap.value(qosSubProp());
+                    if (qosVar.isValid() && qosVar.canConvert<int>()) {
+                        subConfig.m_maxQos = qosVar.value<int>();
+                    }
+
+                    auto retainHandlingVar = subMap.value(retainHandlingSubProp());
+                    if (retainHandlingVar.isValid() && retainHandlingVar.canConvert<int>()) {
+                        subConfig.m_retainHandling = retainHandlingVar.value<int>();
+                    }
+
+                    auto noLocalVar = subMap.value(noLocalSubProp());
+                    if (noLocalVar.isValid() && noLocalVar.canConvert<bool>()) {
+                        subConfig.m_noLocal = noLocalVar.value<bool>();
+                    }  
+
+                    auto retainAsPublishedVar = subMap.value(retainAsPublishedSubProp());
+                    if (retainAsPublishedVar.isValid() && retainAsPublishedVar.canConvert<bool>()) {
+                        subConfig.m_retainAsPublished = retainAsPublishedVar.value<bool>();
+                    }                                       
+                }
+                
+                updated = true;
+                forceCleanStart();
+            }
+        }  
+    }              
+
+    if (updated) {
+        emit sigConfigChanged();
+    }
+}
+
 void Mqtt5ClientFilter::doTick()
 {
     assert(m_tickMeasureTs > 0);
@@ -500,12 +800,15 @@ void Mqtt5ClientFilter::socketConnected()
 
     auto clientId = m_config.m_clientId.toStdString();
     auto username = m_config.m_username.toStdString();
-    auto password = m_config.m_username.toStdString();
+    auto password = parsePassword(m_config.m_password);
     
     if (!clientId.empty()) {
         basicConfig.m_clientId = clientId.c_str();
     }
 
+    basicConfig.m_username = username.c_str();
+    basicConfig.m_password = password.data();
+    basicConfig.m_passwordLen = static_cast<decltype(basicConfig.m_passwordLen)>(password.size());
     basicConfig.m_cleanStart = 
         (m_config.m_forcedCleanStart) ||
         (clientId.empty()) || 

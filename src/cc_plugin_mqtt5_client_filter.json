@@ -12,9 +12,9 @@
         "    { \"mqtt5.content_type\": \"some_content_type\" } - Set content type\n",
         "    { \"mqtt5.correlation_data\": \"0123456789abcdef\" } - Set hex bytes of the correlation data\n",
         "    { \"mqtt5.user_props\": [{\"key\": \"key1\", \"value\": \"value1\" }, ...] - Set user properties\n",
-        "    { \"mqtt.topic\": \"some/topic\" } - Same as \"mqtt5.topic\".\n",
-        "    { \"mqtt.qos\": 1 } - Same as \"mqtt5.qos\".\n",
-        "    { \"mqtt.retained\": true } - Same as \"mqtt5.retained\".\n"
+        "    { \"mqtt.topic\": \"some/topic\" } - Alias to \"mqtt5.topic\".\n",
+        "    { \"mqtt.qos\": 1 } - Alias to \"mqtt5.qos\".\n",
+        "    { \"mqtt.retained\": true } - Alias to \"mqtt5.retained\".\n"
     ],
     "type" : "filter"
 }

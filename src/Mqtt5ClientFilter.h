@@ -48,7 +48,7 @@ public:
         QString m_topic;
         int m_maxQos = 2;
         int m_retainHandling = 0;
-        bool m_noLocal = false;
+        bool m_noLocal = true;
         bool m_retainAsPublished = false;
     };
 
@@ -91,12 +91,16 @@ public:
         m_firstConnect = true;
     }
 
+signals:
+    void sigConfigChanged();    
+
 protected:
     virtual bool startImpl() override;
     virtual void stopImpl() override;
     virtual QList<cc_tools_qt::DataInfoPtr> recvDataImpl(cc_tools_qt::DataInfoPtr dataPtr) override;
     virtual QList<cc_tools_qt::DataInfoPtr> sendDataImpl(cc_tools_qt::DataInfoPtr dataPtr) override;
     virtual void socketConnectionReportImpl(bool connected) override;
+    virtual void applyInterPluginConfigImpl(const QVariantMap& props) override;     
 
 private slots:
     void doTick();
