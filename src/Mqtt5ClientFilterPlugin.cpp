@@ -205,6 +205,12 @@ void Mqtt5ClientFilterPlugin::reconfigureImpl(const QVariantMap& config)
     getListFromConfigMap(subConfig, TopicAliasesSubKey, m_filter->config().m_topicAliases);
 }
 
+void Mqtt5ClientFilterPlugin::applyInterPluginConfigImpl(const QVariantMap& props)
+{
+    createFilterIfNeeded();
+    m_filter->applyInterPluginConfig(props);
+}
+
 void Mqtt5ClientFilterPlugin::createFilterIfNeeded()
 {
     if (m_filter) {
