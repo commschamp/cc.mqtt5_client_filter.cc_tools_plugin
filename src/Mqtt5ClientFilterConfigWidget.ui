@@ -49,6 +49,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="m_clientIdLabel">
+       <property name="toolTip">
+        <string>Updated by &quot;mqtt5.client&quot; or &quot;mqtt.client&quot; inter-plugin configuration.</string>
+       </property>
        <property name="text">
         <string>Client ID:</string>
        </property>
@@ -76,6 +79,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
       <widget class="QLabel" name="m_usernameLabel">
+       <property name="toolTip">
+        <string>Updated by &quot;mqtt5.username&quot; or &quot;mqtt.username&quot; inter-plugin configuration</string>
+       </property>
        <property name="text">
         <string>Username:</string>
        </property>
@@ -103,6 +109,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
       <widget class="QLabel" name="m_usernameLabel_2">
+       <property name="toolTip">
+        <string>Updated by &quot;mqtt5.password&quot; or &quot;mqtt.password&quot; inter-plugin configuration</string>
+       </property>
        <property name="text">
         <string>Password:</string>
        </property>
@@ -112,6 +121,16 @@
       <widget class="QLineEdit" name="m_passwordLineEdit">
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_passwordShowHidePushButton">
+       <property name="text">
+        <string>Show</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -175,6 +194,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="m_pubTopicLabel">
+       <property name="toolTip">
+        <string>Updated by &quot;mqtt5.pub_topic&quot; or &quot;mqtt.pub_topic&quot; inter-plugin configuration</string>
+       </property>
        <property name="text">
         <string>Default Publish Topic:</string>
        </property>
@@ -202,6 +224,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
       <widget class="QLabel" name="m_pubQosLabel">
+       <property name="toolTip">
+        <string>Updated by &quot;mqtt5.pub_qos&quot; or &quot;mqtt.pub_qos&quot; inter-plugin configuration</string>
+       </property>
        <property name="text">
         <string>Default Publish QoS:</string>
        </property>
@@ -233,6 +258,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_10">
      <item>
       <widget class="QLabel" name="m_respTopicLabel">
+       <property name="toolTip">
+        <string>Updated by &quot;mqtt5.resp_topic&quot; inter-plugin configuration</string>
+       </property>
        <property name="text">
         <string>Default Response Topic:</string>
        </property>

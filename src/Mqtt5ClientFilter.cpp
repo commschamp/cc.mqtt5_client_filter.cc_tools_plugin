@@ -34,7 +34,6 @@ namespace cc_plugin_mqtt5_client_filter
 namespace 
 {
 
-
 inline Mqtt5ClientFilter* asThis(void* data)
 {
     return reinterpret_cast<Mqtt5ClientFilter*>(data);
@@ -46,15 +45,33 @@ const QString& topicProp()
     return Str;
 }
 
+const QString& aliasTopicProp()
+{
+    static const QString Str("mqtt.topic");
+    return Str;
+}
+
 const QString& qosProp()
 {
     static const QString Str("mqtt5.qos");
     return Str;
 }
 
+const QString& aliasQosProp()
+{
+    static const QString Str("mqtt.qos");
+    return Str;
+}
+
 const QString& retainedProp()
 {
     static const QString Str("mqtt5.retained");
+    return Str;    
+}
+
+const QString& aliasRetainedProp()
+{
+    static const QString Str("mqtt.retained");
     return Str;    
 }
 
@@ -100,6 +117,84 @@ const QString& userPropsProp()
     return Str;
 }
 
+const QString& clientProp()
+{
+    static const QString Str("mqtt5.client");
+    return Str;    
+}
+
+const QString& aliasClientProp()
+{
+    static const QString Str("mqtt.client");
+    return Str;    
+}
+
+const QString& usernameProp()
+{
+    static const QString Str("mqtt5.username");
+    return Str;    
+}
+
+const QString& aliasUsernameProp()
+{
+    static const QString Str("mqtt.username");
+    return Str;    
+}
+
+const QString& passwordProp()
+{
+    static const QString Str("mqtt5.password");
+    return Str;    
+}
+
+const QString& aliasPasswordProp()
+{
+    static const QString Str("mqtt.password");
+    return Str;    
+}
+
+const QString& pubTopicProp()
+{
+    static const QString Str("mqtt5.pub_topic");
+    return Str;    
+}
+
+const QString& aliasPubTopicProp()
+{
+    static const QString Str("mqtt.pub_topic");
+    return Str;    
+}
+
+const QString& pubQosProp()
+{
+    static const QString Str("mqtt5.pub_qos");
+    return Str;    
+}
+
+const QString& aliasPubQosProp()
+{
+    static const QString Str("mqtt.pub_qos");
+    return Str;    
+}
+
+const QString& respTopicProp()
+{
+    static const QString Str("mqtt5.resp_topic");
+    return Str;    
+}
+
+const QString& subscribesProp()
+{
+    static const QString Str("mqtt5.subscribes");
+    return Str;    
+}
+
+const QString& aliasSubscribesProp()
+{
+    static const QString Str("mqtt.subscribes");
+    return Str;    
+}
+
 const QString& keySubProp()
 {
     static const QString Str("key");
@@ -109,6 +204,37 @@ const QString& keySubProp()
 const QString& valueSubProp()
 {
     static const QString Str("value");
+    return Str;
+}
+
+const QString& topicSubProp()
+{
+    static const QString Str("topic");
+    return Str;
+}
+
+const QString& qosSubProp()
+{
+    static const QString Str("qos");
+    return Str;
+}
+
+const QString& noLocalSubProp()
+{
+    static const QString Str("no_local");
+    return Str;
+}
+
+const QString& retainAsPublishedSubProp()
+{
+    static const QString Str("retain_as_published");
+    return Str;
+}
+
+
+const QString& retainHandlingSubProp()
+{
+    static const QString Str("retain_handling");
     return Str;
 }
 
@@ -126,6 +252,127 @@ QByteArray parseBinDataStr(const QString& str)
     for (auto idx = 0; idx < str.size(); ++idx) {
         auto byteStr = str.mid(idx, 2);
         result.append(static_cast<char>(byteStr.toUInt(nullptr, 16)));
+    }
+
+    return result;
+}
+
+std::string getOutgoingTopic(const QVariantMap& props, const QString configVal)
+{
+    if (props.contains(topicProp())) {
+        return props[topicProp()].value<QString>().toStdString();
+    }
+
+    if (props.contains(aliasTopicProp())) {
+        return props[aliasTopicProp()].value<QString>().toStdString();
+    }
+
+    return configVal.toStdString();
+}
+
+int getOutgoingQos(const QVariantMap& props, int configVal)
+{
+    if (props.contains(qosProp())) {
+        return props[qosProp()].value<int>();
+    }
+
+    if (props.contains(aliasQosProp())) {
+        return props[aliasQosProp()].value<int>();
+    }
+
+    return configVal;
+}
+
+bool getOutgoingRetained(const QVariantMap& props)
+{
+    if (props.contains(retainedProp())) {
+        return props[retainedProp()].value<bool>();
+    }
+
+    if (props.contains(aliasRetainedProp())) {
+        return props[aliasRetainedProp()].value<bool>();
+    }    
+
+    return false;
+}
+
+const QString& errorCodeStr(CC_Mqtt5ErrorCode ec)
+{
+    static const QString Map[] = {
+        /* CC_Mqtt5ErrorCode_Success */ "Success",
+        /* CC_Mqtt5ErrorCode_InternalError */ "Internal Error",
+        /* CC_Mqtt5ErrorCode_NotIntitialized */ "Not Initialized",
+        /* CC_Mqtt5ErrorCode_Busy */ "Busy",
+        /* CC_Mqtt5ErrorCode_NotConnected */ "Not Connected",
+        /* CC_Mqtt5ErrorCode_AlreadyConnected */ "Already Connected",
+        /* CC_Mqtt5ErrorCode_BadParam */ "Bad Parameter",
+        /* CC_Mqtt5ErrorCode_InsufficientConfig */ "Insufficient Config",
+        /* CC_Mqtt5ErrorCode_OutOfMemory */ "Out of Memory",
+        /* CC_Mqtt5ErrorCode_BufferOverflow */ "Buffer Overflow",
+        /* CC_Mqtt5ErrorCode_NotSupported */ "Feature is Not Supported",
+        /* CC_Mqtt5ErrorCode_RetryLater */ "Retry later",
+        /* CC_Mqtt5ErrorCode_Terminating */ "Terminating",
+        /* CC_Mqtt5ErrorCode_NetworkDisconnected */ "Network is Disconnected",
+        /* CC_Mqtt5ErrorCode_NotAuthenticated */ "Not Authenticated",
+    };
+    static const std::size_t MapSize = std::extent<decltype(Map)>::value;
+    static_assert(MapSize == CC_Mqtt5ErrorCode_ValuesLimit);
+
+    auto idx = static_cast<unsigned>(ec);
+    if (MapSize <= idx) {
+        static const QString UnknownStr("Unknown");
+        return UnknownStr;
+    }
+
+    return Map[idx];
+}
+
+const QString& statusStr(CC_Mqtt5AsyncOpStatus status)
+{
+    static const QString Map[] = {
+        /* CC_Mqtt5AsyncOpStatus_Complete */ "Complete",
+        /* CC_Mqtt5AsyncOpStatus_InternalError */ "Internal Error",
+        /* CC_Mqtt5AsyncOpStatus_Timeout */ "Timeout",
+        /* CC_Mqtt5AsyncOpStatus_ProtocolError */ "Protocol Error",
+        /* CC_Mqtt5AsyncOpStatus_Aborted */ "Aborted",
+        /* CC_Mqtt5AsyncOpStatus_BrokerDisconnected */ "Broker Disconnected",
+        /* CC_Mqtt5AsyncOpStatus_OutOfMemory */ "Out of Memory",
+        /* CC_Mqtt5AsyncOpStatus_BadParam */ "Bad Parameter",
+    };
+    static const std::size_t MapSize = std::extent<decltype(Map)>::value;
+    static_assert(MapSize == CC_Mqtt5AsyncOpStatus_ValuesLimit);
+
+    auto idx = static_cast<unsigned>(status);
+    if (MapSize <= idx) {
+        static const QString UnknownStr("Unknown");
+        return UnknownStr;
+    }
+
+    return Map[idx];
+}
+
+std::vector<std::uint8_t> parsePassword(const QString& password)
+{
+    std::vector<std::uint8_t> result;
+    result.reserve(password.size());
+
+    for (auto idx = 0; idx < password.size();) {
+        if (((idx + 1) < password.size()) && (password[idx] == '\\') && (password[idx + 1] == '\\')) {
+            result.push_back(static_cast<std::uint8_t>('\''));
+            idx += 2;
+            continue;
+        }
+
+        if ((password.size() <= (idx + 4)) || 
+            (password[idx] != '\\') || 
+            (password[idx + 1] != 'x')) {
+            result.push_back(static_cast<std::uint8_t>(password[idx].cell()));
+            idx += 1;
+            continue;
+        }
+
+        result.push_back(static_cast<std::uint8_t>(password.mid(idx + 2, 2).toUInt(nullptr, 16)));
+        idx += 4;
     }
 
     return result;
@@ -187,13 +434,13 @@ void Mqtt5ClientFilter::stopImpl()
     ::cc_mqtt5_client_disconnect_init_config(&config);
     auto ec = ::cc_mqtt5_client_disconnect_config(disconnect, &config);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to configure MQTT5 disconnect with ec=") + QString::number(ec));
+        reportError(tr("Failed to configure MQTT5 disconnect with error: ") + errorCodeStr(ec));
         return;
     }    
 
     ec = cc_mqtt5_client_disconnect_send(disconnect);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to send disconnect with ec=") + QString::number(ec));
+        reportError(tr("Failed to send disconnect with error: ") + errorCodeStr(ec));
         return;
     }    
 }
@@ -224,27 +471,20 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
         return m_sendData;
     }
 
-    std::string topic = m_config.m_pubTopic.toStdString();
     auto& props = dataPtr->m_extraProperties;
-    if (props.contains(topicProp())) {
-        topic = props[topicProp()].value<QString>().toStdString();
-    }
-    else {
-        props[topicProp()] = QString::fromStdString(topic);
-    }
+    std::string topic = getOutgoingTopic(props, m_config.m_pubTopic);
+    props[topicProp()] = QString::fromStdString(topic);
+    
+    auto qos = getOutgoingQos(props, m_config.m_pubQos);
+    props[qosProp()] = qos;
 
-    auto qos = m_config.m_pubQos;
-    if (props.contains(qosProp())) {
-        qos = props[qosProp()].value<int>();
-    }
-    else {
-        props[qosProp()] = qos;
-    }
+    auto retained = getOutgoingRetained(props);
+    props[retainedProp()] = retained;
 
     CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
     CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
     if (publish == NULL) {
-        reportError(tr("Publish allocation failed with ec=") + QString::number(ec));
+        reportError(tr("Publish allocation failed with error: ") + errorCodeStr(ec));
         return m_sendData;
     }
 
@@ -255,10 +495,10 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     basicConfig.m_data = dataPtr->m_data.data();
     basicConfig.m_dataLen = static_cast<decltype(basicConfig.m_dataLen)>(dataPtr->m_data.size());
     basicConfig.m_qos = static_cast<decltype(basicConfig.m_qos)>(qos);    
-    basicConfig.m_retain = props[retainedProp()].value<bool>();
+    basicConfig.m_retain = retained;
     ec = ::cc_mqtt5_client_publish_config_basic(publish, &basicConfig);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to configure MQTT5 publish with ec=") + QString::number(ec));
+        reportError(tr("Failed to configure MQTT5 publish with error: ") + errorCodeStr(ec));
         return m_sendData;
     }    
 
@@ -308,7 +548,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
         ec = ::cc_mqtt5_client_publish_config_extra(publish, &extraConfig);
         if (ec != CC_Mqtt5ErrorCode_Success) {
-            reportError(tr("Failed to configure extra properties for MQTT5 publish with ec=") + QString::number(ec));
+            reportError(tr("Failed to configure extra properties for MQTT5 publish with error: ") + errorCodeStr(ec));
         }           
     }
 
@@ -334,7 +574,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
             ec = ::cc_mqtt5_client_publish_add_user_prop(publish, &prop);
             if (ec != CC_Mqtt5ErrorCode_Success) {
-                reportError(tr("Failed to add publish user property with ec=") + QString::number(ec));
+                reportError(tr("Failed to add publish user property with error: ") + errorCodeStr(ec));
                 continue;
             }            
         }
@@ -344,7 +584,7 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
     ec = ::cc_mqtt5_client_publish_send(publish, &publishCompleteCb, this);
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to send MQTT5 publish with ec=") + QString::number(ec));
+        reportError(tr("Failed to send MQTT5 publish with error: ") + errorCodeStr(ec));
         m_sendDataPtr.reset();
         return m_sendData;        
     }
@@ -362,6 +602,170 @@ void Mqtt5ClientFilter::socketConnectionReportImpl(bool connected)
     }
 
     socketDisconnected();
+}
+
+void Mqtt5ClientFilter::applyInterPluginConfigImpl(const QVariantMap& props)
+{
+    bool updated = false;
+
+    {
+        static const QString* ClientProps[] = {
+            &aliasClientProp(),
+            &clientProp(),
+        };
+
+        for (auto* p : ClientProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_clientId = var.value<QString>();
+                updated = true;
+            }
+        }
+    }
+
+    {
+        static const QString* UsernameProps[] = {
+            &aliasUsernameProp(),
+            &usernameProp(),
+        };
+
+        for (auto* p : UsernameProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_username = var.value<QString>();
+                updated = true;
+            }
+        }
+    }
+    
+    {
+        static const QString* PasswordProps[] = {
+            &aliasPasswordProp(),
+            &passwordProp(),
+        };
+
+        for (auto* p : PasswordProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_password = var.value<QString>();
+                updated = true;
+            }
+        }  
+    }
+
+    {
+        static const QString* PubTopicProps[] = {
+            &aliasPubTopicProp(),
+            &pubTopicProp(),
+        };
+
+        for (auto* p : PubTopicProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_pubTopic = var.value<QString>();
+                updated = true;
+            }
+        }  
+    }  
+
+    {
+        static const QString* PubQosProps[] = {
+            &aliasPubQosProp(),
+            &pubQosProp(),
+        };
+
+        for (auto* p : PubQosProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<int>())) {
+                m_config.m_pubQos = var.value<int>();
+                updated = true;
+            }
+        }  
+    }  
+
+    {
+        static const QString* RespTopicProps[] = {
+            &respTopicProp(),
+        };
+
+        for (auto* p : RespTopicProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QString>())) {
+                m_config.m_respTopic = var.value<QString>();
+                updated = true;
+            }
+        }  
+    }       
+
+    {
+        static const QString* SubscribesProps[] = {
+            &aliasSubscribesProp(),
+            &subscribesProp(),
+        };
+
+        for (auto* p : SubscribesProps) {
+            auto var = props.value(*p);
+            if ((var.isValid()) && (var.canConvert<QVariantList>())) {
+                auto subList = var.value<QVariantList>();
+
+                for (auto idx = 0; idx < subList.size(); ++idx) {
+                    auto& subVar = subList[idx];
+                    if ((!subVar.isValid()) || (!subVar.canConvert<QVariantMap>())) {
+                        continue;
+                    }
+
+                    auto subMap = subVar.value<QVariantMap>();
+                    auto topicVar = subMap.value(topicSubProp());
+                    if ((!topicVar.isValid()) || (!topicVar.canConvert<QString>())) {
+                        continue;
+                    }
+
+                    auto topic = topicVar.value<QString>();
+
+                    auto iter = 
+                        std::find_if(
+                            m_config.m_subscribes.begin(), m_config.m_subscribes.end(),
+                            [&topic](const auto& info)
+                            {
+                                return topic == info.m_topic;
+                            });
+                    
+                    if (iter == m_config.m_subscribes.end()) {
+                        iter = m_config.m_subscribes.insert(m_config.m_subscribes.end(), SubConfig());
+                        iter->m_topic = topic;
+                    }
+
+                    auto& subConfig = *iter;
+                    auto qosVar = subMap.value(qosSubProp());
+                    if (qosVar.isValid() && qosVar.canConvert<int>()) {
+                        subConfig.m_maxQos = qosVar.value<int>();
+                    }
+
+                    auto retainHandlingVar = subMap.value(retainHandlingSubProp());
+                    if (retainHandlingVar.isValid() && retainHandlingVar.canConvert<int>()) {
+                        subConfig.m_retainHandling = retainHandlingVar.value<int>();
+                    }
+
+                    auto noLocalVar = subMap.value(noLocalSubProp());
+                    if (noLocalVar.isValid() && noLocalVar.canConvert<bool>()) {
+                        subConfig.m_noLocal = noLocalVar.value<bool>();
+                    }  
+
+                    auto retainAsPublishedVar = subMap.value(retainAsPublishedSubProp());
+                    if (retainAsPublishedVar.isValid() && retainAsPublishedVar.canConvert<bool>()) {
+                        subConfig.m_retainAsPublished = retainAsPublishedVar.value<bool>();
+                    }                                       
+                }
+                
+                updated = true;
+                forceCleanStart();
+            }
+        }  
+    }              
+
+    if (updated) {
+        emit sigConfigChanged();
+    }
 }
 
 void Mqtt5ClientFilter::doTick()
@@ -396,12 +800,15 @@ void Mqtt5ClientFilter::socketConnected()
 
     auto clientId = m_config.m_clientId.toStdString();
     auto username = m_config.m_username.toStdString();
-    auto password = m_config.m_username.toStdString();
+    auto password = parsePassword(m_config.m_password);
     
     if (!clientId.empty()) {
         basicConfig.m_clientId = clientId.c_str();
     }
 
+    basicConfig.m_username = username.c_str();
+    basicConfig.m_password = password.data();
+    basicConfig.m_passwordLen = static_cast<decltype(basicConfig.m_passwordLen)>(password.size());
     basicConfig.m_cleanStart = 
         (m_config.m_forcedCleanStart) ||
         (clientId.empty()) || 
@@ -553,7 +960,7 @@ unsigned Mqtt5ClientFilter::cancelTickProgramInternal()
 void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response)
 {
     if (status != CC_Mqtt5AsyncOpStatus_Complete) {
-        reportError(tr("Failed to connect to MQTT5 broker, status=") + QString::number(status));
+        reportError(tr("Failed to connect to MQTT5 broker with status: ") + statusStr(status));
         return;
     }
 
@@ -611,7 +1018,7 @@ void Mqtt5ClientFilter::connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, co
 void Mqtt5ClientFilter::subscribeCompleteInternal([[maybe_unused]] CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response)
 {
     if (status != CC_Mqtt5AsyncOpStatus_Complete) {
-        reportError(tr("Failed to subsribe to MQTT5 topics, status=") + QString::number(status));
+        reportError(tr("Failed to subsribe to MQTT5 topics with status: ") + statusStr(status));
         return;
     }  
 
@@ -628,7 +1035,7 @@ void Mqtt5ClientFilter::subscribeCompleteInternal([[maybe_unused]] CC_Mqtt5Subsc
 void Mqtt5ClientFilter::publishCompleteInternal([[maybe_unused]] CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response)
 {
     if (status != CC_Mqtt5AsyncOpStatus_Complete) {
-        reportError(tr("Failed to publish to MQTT5 broker, status=") + QString::number(status));
+        reportError(tr("Failed to publish to MQTT5 broker with status: ") + statusStr(status));
         return;
     }
 

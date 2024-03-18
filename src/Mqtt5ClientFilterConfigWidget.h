@@ -38,10 +38,12 @@ public:
     ~Mqtt5ClientFilterConfigWidget() noexcept;
 
 private slots:
+    void refresh();
     void respTimeoutUpdated(int val);
     void clientIdUpdated(const QString& val);
     void usernameUpdated(const QString& val);
     void passwordUpdated(const QString& val);
+    void passwordShowHideClicked(bool checked);
     void forcedCleanStartUpdated(int val);
     void pubTopicUpdated(const QString& val);
     void pubQosUpdated(int val);

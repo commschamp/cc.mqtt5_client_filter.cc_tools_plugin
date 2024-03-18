@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.11)
-project ("cc_plugin_mqtt5_client_filter")
+project ("cc_tools_plugin_mqtt5_client_filter")
 
 # Available options
 option (OPT_WARN_AS_ERR "Treat warning as error" ON)
