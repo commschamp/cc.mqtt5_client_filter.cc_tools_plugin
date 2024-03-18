@@ -4,7 +4,7 @@ on: [push]
 
 env:
   COMMS_TAG: v5.2.2
-  CC_TOOLS_QT_TAG: develop
+  CC_TOOLS_QT_TAG: v5.2
   CC_MQTT5_GENERATED_TAG: v2.6
   CC_MQTT5_LIBS_TAG: v0.3.1
 
