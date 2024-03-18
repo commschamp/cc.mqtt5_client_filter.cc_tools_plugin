@@ -1,7 +1,7 @@
 {
-    "name" : "CC MQTT5 Client Filter",
+    "name" : "CC MQTT v5 Client Filter",
     "desc" : [
-        "This filter provides MQTT5 transport filtering for the used protocol.\n\n",
+        "This filter provides MQTT v5 transport management for the used protocol.\n\n",
         "Supports inter-plugin configuration values:\n",
         "    { \"mqtt5.client\": \"client_id\" } - Update configured client id.\n",
         "    { \"mqtt5.username\": \"username\" } - Update configured username.\n",
@@ -17,7 +17,7 @@
         "            \"retain_as_published\": false, - Retain as published.\n",        
         "            \"retain_handling\": 1 - Retain handling.\n",        
         "        }, {...}",
-        "    ]} - Update subscribes\n",
+        "    ] } - Update subscribes\n",
         "    { \"mqtt.client\": \"client_id\" } - Alias to \"mqtt5.client\".\n",
         "    { \"mqtt.username\": \"username\" } - Alias to \"mqtt5.username\".\n",
         "    { \"mqtt.password\": \"password\" } - Alias to \"mqtt5.password\".\n",
