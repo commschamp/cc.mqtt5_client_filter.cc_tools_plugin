@@ -195,6 +195,30 @@ const QString& aliasSubscribesProp()
     return Str;    
 }
 
+const QString& subscribesRemoveProp()
+{
+    static const QString Str("mqtt5.subscribes_remove");
+    return Str;    
+}
+
+const QString& aliasSubscribesRemoveProp()
+{
+    static const QString Str("mqtt.subscribes_remove");
+    return Str;    
+}
+
+const QString& subscribesClearProp()
+{
+    static const QString Str("mqtt5.subscribes_clear");
+    return Str;    
+}
+
+const QString& aliasSubscribesClearProp()
+{
+    static const QString Str("mqtt.subscribes_clear");
+    return Str;    
+}
+
 const QString& keySubProp()
 {
     static const QString Str("key");
@@ -695,7 +719,73 @@ void Mqtt5ClientFilter::applyInterPluginConfigImpl(const QVariantMap& props)
                 updated = true;
             }
         }  
-    }       
+    }     
+
+    {
+        static const QString* SubscribesRemoveProps[] = {
+            &aliasSubscribesRemoveProp(),
+            &subscribesRemoveProp(),
+        };
+
+        for (auto* p : SubscribesRemoveProps) {
+            auto var = props.value(*p);
+            if ((!var.isValid()) || (!var.canConvert<QVariantList>())) {
+                continue;
+            }
+
+            auto subList = var.value<QVariantList>();
+
+            for (auto idx = 0; idx < subList.size(); ++idx) {
+                auto& subVar = subList[idx];
+                if ((!subVar.isValid()) || (!subVar.canConvert<QVariantMap>())) {
+                    continue;
+                }
+
+                auto subMap = subVar.value<QVariantMap>();
+                auto topicVar = subMap.value(topicSubProp());
+                if ((!topicVar.isValid()) || (!topicVar.canConvert<QString>())) {
+                    continue;
+                }
+
+                auto topic = topicVar.value<QString>();
+
+                auto iter = 
+                    std::find_if(
+                        m_config.m_subscribes.begin(), m_config.m_subscribes.end(),
+                        [&topic](const auto& info)
+                        {
+                            return topic == info.m_topic;
+                        });
+                
+                if (iter != m_config.m_subscribes.end()) {
+                    m_config.m_subscribes.erase(iter);
+                    updated = true;
+                    forceCleanStart();                    
+                }
+            }
+        }  
+    }  
+
+    {
+        static const QString* SubscribesClearProps[] = {
+            &aliasSubscribesClearProp(),
+            &subscribesClearProp(),
+        };
+
+        for (auto* p : SubscribesClearProps) {
+            auto var = props.value(*p);
+            if ((!var.isValid()) || (!var.canConvert<bool>())) {
+                continue;
+            }
+
+            if ((!var.value<bool>()) || (m_config.m_subscribes.empty())) {
+                continue;
+            }
+
+            m_config.m_subscribes.clear();
+            updated = true;
+        }  
+    }           
 
     {
         static const QString* SubscribesProps[] = {
@@ -705,61 +795,63 @@ void Mqtt5ClientFilter::applyInterPluginConfigImpl(const QVariantMap& props)
 
         for (auto* p : SubscribesProps) {
             auto var = props.value(*p);
-            if ((var.isValid()) && (var.canConvert<QVariantList>())) {
-                auto subList = var.value<QVariantList>();
-
-                for (auto idx = 0; idx < subList.size(); ++idx) {
-                    auto& subVar = subList[idx];
-                    if ((!subVar.isValid()) || (!subVar.canConvert<QVariantMap>())) {
-                        continue;
-                    }
-
-                    auto subMap = subVar.value<QVariantMap>();
-                    auto topicVar = subMap.value(topicSubProp());
-                    if ((!topicVar.isValid()) || (!topicVar.canConvert<QString>())) {
-                        continue;
-                    }
-
-                    auto topic = topicVar.value<QString>();
-
-                    auto iter = 
-                        std::find_if(
-                            m_config.m_subscribes.begin(), m_config.m_subscribes.end(),
-                            [&topic](const auto& info)
-                            {
-                                return topic == info.m_topic;
-                            });
-                    
-                    if (iter == m_config.m_subscribes.end()) {
-                        iter = m_config.m_subscribes.insert(m_config.m_subscribes.end(), SubConfig());
-                        iter->m_topic = topic;
-                    }
-
-                    auto& subConfig = *iter;
-                    auto qosVar = subMap.value(qosSubProp());
-                    if (qosVar.isValid() && qosVar.canConvert<int>()) {
-                        subConfig.m_maxQos = qosVar.value<int>();
-                    }
-
-                    auto retainHandlingVar = subMap.value(retainHandlingSubProp());
-                    if (retainHandlingVar.isValid() && retainHandlingVar.canConvert<int>()) {
-                        subConfig.m_retainHandling = retainHandlingVar.value<int>();
-                    }
-
-                    auto noLocalVar = subMap.value(noLocalSubProp());
-                    if (noLocalVar.isValid() && noLocalVar.canConvert<bool>()) {
-                        subConfig.m_noLocal = noLocalVar.value<bool>();
-                    }  
-
-                    auto retainAsPublishedVar = subMap.value(retainAsPublishedSubProp());
-                    if (retainAsPublishedVar.isValid() && retainAsPublishedVar.canConvert<bool>()) {
-                        subConfig.m_retainAsPublished = retainAsPublishedVar.value<bool>();
-                    }                                       
-                }
-                
-                updated = true;
-                forceCleanStart();
+            if ((!var.isValid()) || (!var.canConvert<QVariantList>())) {
+                continue;
             }
+
+            auto subList = var.value<QVariantList>();
+
+            for (auto idx = 0; idx < subList.size(); ++idx) {
+                auto& subVar = subList[idx];
+                if ((!subVar.isValid()) || (!subVar.canConvert<QVariantMap>())) {
+                    continue;
+                }
+
+                auto subMap = subVar.value<QVariantMap>();
+                auto topicVar = subMap.value(topicSubProp());
+                if ((!topicVar.isValid()) || (!topicVar.canConvert<QString>())) {
+                    continue;
+                }
+
+                auto topic = topicVar.value<QString>();
+
+                auto iter = 
+                    std::find_if(
+                        m_config.m_subscribes.begin(), m_config.m_subscribes.end(),
+                        [&topic](const auto& info)
+                        {
+                            return topic == info.m_topic;
+                        });
+                
+                if (iter == m_config.m_subscribes.end()) {
+                    iter = m_config.m_subscribes.insert(m_config.m_subscribes.end(), SubConfig());
+                    iter->m_topic = topic;
+                }
+
+                auto& subConfig = *iter;
+                auto qosVar = subMap.value(qosSubProp());
+                if (qosVar.isValid() && qosVar.canConvert<int>()) {
+                    subConfig.m_maxQos = qosVar.value<int>();
+                }
+
+                auto retainHandlingVar = subMap.value(retainHandlingSubProp());
+                if (retainHandlingVar.isValid() && retainHandlingVar.canConvert<int>()) {
+                    subConfig.m_retainHandling = retainHandlingVar.value<int>();
+                }
+
+                auto noLocalVar = subMap.value(noLocalSubProp());
+                if (noLocalVar.isValid() && noLocalVar.canConvert<bool>()) {
+                    subConfig.m_noLocal = noLocalVar.value<bool>();
+                }  
+
+                auto retainAsPublishedVar = subMap.value(retainAsPublishedSubProp());
+                if (retainAsPublishedVar.isValid() && retainAsPublishedVar.canConvert<bool>()) {
+                    subConfig.m_retainAsPublished = retainAsPublishedVar.value<bool>();
+                }                                       
+            }
+            
+            updated = true;
+            forceCleanStart();
         }  
     }              
 
