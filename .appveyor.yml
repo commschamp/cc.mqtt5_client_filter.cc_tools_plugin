@@ -17,10 +17,10 @@ configuration:
     - Release
 
 environment:
-    COMMS_TAG: v5.2.2
-    CC_TOOLS_QT_TAG: v5.2
+    COMMS_TAG: develop
+    CC_TOOLS_QT_TAG: develop
     CC_MQTT5_GENERATED_TAG: v2.6
-    CC_MQTT5_LIBS_TAG: v0.3.1
+    CC_MQTT5_LIBS_TAG: develop
     matrix:
         - CPP_STD: 17
           QT_MAJOR: 5
