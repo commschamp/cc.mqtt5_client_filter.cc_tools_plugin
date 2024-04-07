@@ -75,6 +75,10 @@ public:
         int m_pubQos = 0;
         SubConfigsList m_subscribes;
         TopicAliasConfigsList m_topicAliases;
+        unsigned m_keepAlive = 60;
+        unsigned m_sessionExpiryInterval = 60;
+        unsigned m_topicAliasMaximum = 100;
+        bool m_sessionExpiryInfinite = false;
         bool m_forcedCleanStart = false;
     };
 

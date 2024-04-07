@@ -22,6 +22,8 @@
 
 #include <cassert>
 
+#include <QtCore/QtGlobal>
+
 namespace cc_plugin_mqtt5_client_filter
 {
 
@@ -83,6 +85,28 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
         this, &Mqtt5ClientFilterConfigWidget::passwordShowHideClicked);               
 
     connect(
+        m_ui.m_keepAliveSpinBox, qOverload<int>(&QSpinBox::valueChanged),
+        this, &Mqtt5ClientFilterConfigWidget::keepAliveUpdated);    
+
+    connect(
+        m_ui.m_sessionExpiryIntervalSpinBox, qOverload<int>(&QSpinBox::valueChanged),
+        this, &Mqtt5ClientFilterConfigWidget::sessionExpiryUpdated);     
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 7, 0)
+    connect(
+        m_ui.m_sessionExpiryInfiniteCheckBox, &QCheckBox::stateChanged,
+        this, qOverload<int>(&Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated));             
+#else
+    connect(
+        m_ui.m_sessionExpiryInfiniteCheckBox, &QCheckBox::checkStateChanged,
+        this, qOverload<Qt::CheckState>(&Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated));                      
+#endif   
+
+    connect(
+        m_ui.m_topicAliasMaximumSpinBox, qOverload<int>(&QSpinBox::valueChanged),
+        this, &Mqtt5ClientFilterConfigWidget::topicAliasMaximumUpdated); 
+
+    connect(
         m_ui.m_cleanStartComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
         this, &Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated);           
 
@@ -126,11 +150,15 @@ void Mqtt5ClientFilterConfigWidget::refresh()
     m_ui.m_clientIdLineEdit->setText(m_filter.config().m_clientId);
     m_ui.m_usernameLineEdit->setText(m_filter.config().m_username);
     m_ui.m_passwordLineEdit->setText(m_filter.config().m_password);
+    m_ui.m_keepAliveSpinBox->setValue(static_cast<int>(m_filter.config().m_keepAlive));
+    m_ui.m_sessionExpiryIntervalSpinBox->setValue(static_cast<int>(m_filter.config().m_sessionExpiryInterval));
+    m_ui.m_topicAliasMaximumSpinBox->setValue(static_cast<int>(m_filter.config().m_topicAliasMaximum));
     m_ui.m_cleanStartComboBox->setCurrentIndex(static_cast<int>(m_filter.config().m_forcedCleanStart));
     m_ui.m_pubTopicLineEdit->setText(m_filter.config().m_pubTopic);
     m_ui.m_pubQosSpinBox->setValue(m_filter.config().m_pubQos);
     m_ui.m_respTopicLineEdit->setText(m_filter.config().m_respTopic);
 
+    refreshSessionExpiryInterval();
     refreshSubscribes();
     refreshTopicAliases();
 }
@@ -173,6 +201,32 @@ void Mqtt5ClientFilterConfigWidget::passwordShowHideClicked(bool checked)
     m_ui.m_passwordShowHidePushButton->setText(buttonText);    
 }
 
+void Mqtt5ClientFilterConfigWidget::keepAliveUpdated(int val)
+{
+    m_filter.config().m_keepAlive = static_cast<unsigned>(val);
+}
+
+void Mqtt5ClientFilterConfigWidget::sessionExpiryUpdated(int val)
+{
+    m_filter.config().m_sessionExpiryInterval = static_cast<unsigned>(val);
+}
+
+void Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated(int state)
+{
+    sessionExpiryInfiniteUpdated(static_cast<Qt::CheckState>(state));
+}
+
+void Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated(Qt::CheckState state)
+{
+    m_filter.config().m_sessionExpiryInfinite = (state != Qt::Unchecked);
+    refreshSessionExpiryInterval();
+}
+
+void Mqtt5ClientFilterConfigWidget::topicAliasMaximumUpdated(int val)
+{
+    m_filter.config().m_topicAliasMaximum = static_cast<unsigned>(val);
+}
+
 void Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated(int val)
 {
     m_filter.config().m_forcedCleanStart = (val > 0);
@@ -185,7 +239,7 @@ void Mqtt5ClientFilterConfigWidget::pubTopicUpdated(const QString& val)
 
 void Mqtt5ClientFilterConfigWidget::pubQosUpdated(int val)
 {
-    m_filter.config().m_pubQos = static_cast<unsigned>(val);
+    m_filter.config().m_pubQos = val;
 }
 
 void Mqtt5ClientFilterConfigWidget::respTopicUpdated(const QString& val)
@@ -207,6 +261,12 @@ void Mqtt5ClientFilterConfigWidget::addTopicAlias()
     aliases.resize(aliases.size() + 1U);
     addTopicAliasWidget(aliases.back());
     refreshTopicAliases();
+}
+
+void Mqtt5ClientFilterConfigWidget::refreshSessionExpiryInterval()
+{
+    bool hidden = m_filter.config().m_sessionExpiryInfinite;
+    m_ui.m_sessionExpiryIntervalSpinBox->setHidden(hidden);
 }
 
 void Mqtt5ClientFilterConfigWidget::refreshSubscribes()

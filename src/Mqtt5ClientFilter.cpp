@@ -884,6 +884,7 @@ void Mqtt5ClientFilter::socketConnected()
     basicConfig.m_username = username.c_str();
     basicConfig.m_password = password.data();
     basicConfig.m_passwordLen = static_cast<decltype(basicConfig.m_passwordLen)>(password.size());
+    basicConfig.m_keepAlive = m_config.m_keepAlive;
     basicConfig.m_cleanStart = 
         (m_config.m_forcedCleanStart) ||
         (clientId.empty()) || 
@@ -892,8 +893,11 @@ void Mqtt5ClientFilter::socketConnected()
 
     auto extraConfig = CC_Mqtt5ConnectExtraConfig();
     ::cc_mqtt5_client_connect_init_config_extra(&extraConfig);
-    // extraConfig.m_sessionExpiryInterval = 60;
-    // extraConfig.m_topicAliasMaximum = 100;
+    extraConfig.m_sessionExpiryInterval = m_config.m_sessionExpiryInterval;
+    if (m_config.m_sessionExpiryInfinite) {
+        extraConfig.m_sessionExpiryInterval = CC_MQTT5_SESSION_NEVER_EXPIRES;
+    }
+    extraConfig.m_topicAliasMaximum = m_config.m_topicAliasMaximum;
 
     auto ec = 
         cc_mqtt5_client_connect_full(
