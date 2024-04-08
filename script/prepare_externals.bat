@@ -123,7 +123,7 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 rem ----------------------------------------------------
 
-if exist %CC_MQTT5_GENERATED_SRC_DIR%/.git(
+if exist %CC_MQTT5_GENERATED_SRC_DIR%/.git (
     echo "Updating cc.mqtt5.generated..."
     cd %CC_MQTT5_GENERATED_SRC_DIR%
     git fetch --all
