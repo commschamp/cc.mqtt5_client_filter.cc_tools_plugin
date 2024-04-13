@@ -338,6 +338,7 @@ const QString& errorCodeStr(CC_Mqtt5ErrorCode ec)
         /* CC_Mqtt5ErrorCode_Terminating */ "Terminating",
         /* CC_Mqtt5ErrorCode_NetworkDisconnected */ "Network is Disconnected",
         /* CC_Mqtt5ErrorCode_NotAuthenticated */ "Not Authenticated",
+        /* CC_Mqtt5ErrorCode_PreparationLocked */ "Preparation Locked",
     };
     static const std::size_t MapSize = std::extent<decltype(Map)>::value;
     static_assert(MapSize == CC_Mqtt5ErrorCode_ValuesLimit);
@@ -427,13 +428,7 @@ Mqtt5ClientFilter::~Mqtt5ClientFilter() noexcept = default;
 
 bool Mqtt5ClientFilter::startImpl()
 {
-    auto ec = cc_mqtt5_client_init(m_client.get());
-    if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to initialize MQTT5 client"));
-        return false;
-    }
-
-    ec = ::cc_mqtt5_client_set_default_response_timeout(m_client.get(), m_config.m_respTimeout);
+    auto ec = ::cc_mqtt5_client_set_default_response_timeout(m_client.get(), m_config.m_respTimeout);
     if (ec != CC_Mqtt5ErrorCode_Success) {
         reportError(tr("Failed to update MQTT5 default response timeout"));
         return false;
@@ -875,18 +870,6 @@ void Mqtt5ClientFilter::doTick()
 
 void Mqtt5ClientFilter::socketConnected()
 {
-    auto ec = cc_mqtt5_client_init(m_client.get());
-    if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to (re)initialize MQTT5 client"));
-        return;
-    }
-
-    CC_Mqtt5ConnectHandle connect = cc_mqtt5_client_connect_prepare(m_client.get(), nullptr);
-    if (connect == nullptr) {
-        reportError(tr("Failed to allocate CONNECT message in MQTT5 client"));
-        return;
-    }    
-
     auto basicConfig = CC_Mqtt5ConnectBasicConfig();
     ::cc_mqtt5_client_connect_init_config_basic(&basicConfig);
 
@@ -901,33 +884,42 @@ void Mqtt5ClientFilter::socketConnected()
     basicConfig.m_username = username.c_str();
     basicConfig.m_password = password.data();
     basicConfig.m_passwordLen = static_cast<decltype(basicConfig.m_passwordLen)>(password.size());
+    basicConfig.m_keepAlive = m_config.m_keepAlive;
     basicConfig.m_cleanStart = 
         (m_config.m_forcedCleanStart) ||
         (clientId.empty()) || 
         (clientId != m_prevClientId) ||
         (m_firstConnect);
 
+    auto extraConfig = CC_Mqtt5ConnectExtraConfig();
+    ::cc_mqtt5_client_connect_init_config_extra(&extraConfig);
+    extraConfig.m_sessionExpiryInterval = m_config.m_sessionExpiryInterval;
+    if (m_config.m_sessionExpiryInfinite) {
+        extraConfig.m_sessionExpiryInterval = CC_MQTT5_SESSION_NEVER_EXPIRES;
+    }
+    extraConfig.m_topicAliasMaximum = m_config.m_topicAliasMaximum;
 
-    ec = ::cc_mqtt5_client_connect_config_basic(connect, &basicConfig);
+    auto ec = 
+        cc_mqtt5_client_connect_full(
+            m_client.get(), 
+            &basicConfig, 
+            nullptr, 
+            &extraConfig, 
+            nullptr, 
+            &Mqtt5ClientFilter::connectCompleteCb, 
+            this);
+
     if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to configure CONNECT message in MQTT5 client"));
-        cc_mqtt5_client_connect_cancel(connect);
+        reportError(tr("Failed to initiate MQTT v5 connection"));
         return;
     }    
-
-    ec = cc_mqtt5_client_connect_send(connect, &Mqtt5ClientFilter::connectCompleteCb, this);
-    if (ec != CC_Mqtt5ErrorCode_Success) {
-        reportError(tr("Failed to send MQTT5 CONNECT message"));
-        return;
-    }
 
     m_prevClientId = clientId;
 }
 
 void Mqtt5ClientFilter::socketDisconnected()
 {
-    m_waitingForDisconnect = true;
-    ::cc_mqtt5_client_notify_network_disconnected(m_client.get(), true);
+    ::cc_mqtt5_client_notify_network_disconnected(m_client.get());
 }
 
 void Mqtt5ClientFilter::sendPendingData()
@@ -965,10 +957,6 @@ void Mqtt5ClientFilter::sendDataInternal(const unsigned char* buf, unsigned bufL
 
 void Mqtt5ClientFilter::brokerDisconnectedInternal()
 {
-    if (m_waitingForDisconnect) {
-        return;
-    }
-
     static const QString BrokerDisconnecteError = 
         tr("MQTT5 Broker is disconnected");
 

@@ -44,6 +44,11 @@ private slots:
     void usernameUpdated(const QString& val);
     void passwordUpdated(const QString& val);
     void passwordShowHideClicked(bool checked);
+    void keepAliveUpdated(int val);
+    void sessionExpiryUpdated(int val);
+    void sessionExpiryInfiniteUpdated(int state);
+    void sessionExpiryInfiniteUpdated(Qt::CheckState state);
+    void topicAliasMaximumUpdated(int val);
     void forcedCleanStartUpdated(int val);
     void pubTopicUpdated(const QString& val);
     void pubQosUpdated(int val);
@@ -54,6 +59,8 @@ private slots:
 private:
     using SubConfig = Mqtt5ClientFilter::SubConfig;
     using TopicAliasConfig = Mqtt5ClientFilter::TopicAliasConfig;
+
+    void refreshSessionExpiryInterval();
 
     void refreshSubscribes();
     void addSubscribeWidget(SubConfig& config);    
