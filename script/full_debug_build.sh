@@ -10,6 +10,7 @@ ROOT_DIR=$( dirname ${SCRIPT_DIR} )
 export BUILD_DIR="${ROOT_DIR}/build.full.${CC}"
 export COMMON_INSTALL_DIR=${BUILD_DIR}/install
 export COMMON_BUILD_TYPE=Debug
+export COMMON_USE_CCACHE=ON
 export EXTERNALS_DIR=${ROOT_DIR}/externals
 if [ -z "${COMMON_QT_VER}" ]; then
     export COMMON_QT_VER=5
