@@ -1,4 +1,4 @@
-# MQTT5 Client Filter Plugin for the CommsChampion Tools
+# MQTT v5 Client Filter Plugin for the CommsChampion Tools
 This project is a member of the [CommsChampion Ecosystem](https://commschamp.github.io/) and implements
 **MQTT5 Filter** plugin for the [CommsChampion Tools](https://github.com/commschamp/cc_tools_qt). It
 allows observation and debugging of the custom protocol messages exchanged using
