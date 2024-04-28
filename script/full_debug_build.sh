@@ -10,6 +10,7 @@ ROOT_DIR=$( dirname ${SCRIPT_DIR} )
 export BUILD_DIR="${ROOT_DIR}/build.full.${CC}"
 export COMMON_INSTALL_DIR=${BUILD_DIR}/install
 export COMMON_BUILD_TYPE=Debug
+export COMMON_USE_CCACHE=ON
 export EXTERNALS_DIR=${ROOT_DIR}/externals
 if [ -z "${COMMON_QT_VER}" ]; then
     export COMMON_QT_VER=5
@@ -20,7 +21,7 @@ ${SCRIPT_DIR}/prepare_externals.sh
 
 cd ${BUILD_DIR}
 cmake .. -DCMAKE_INSTALL_PREFIX=${COMMON_INSTALL_DIR} \
-    -DCMAKE_BUILD_TYPE=${COMMON_BUILD_TYPE} -DOPT_QT_MAJOR_VERSION=${COMMON_QT_VER} "$@"
+    -DCMAKE_BUILD_TYPE=${COMMON_BUILD_TYPE} -DOPT_USE_CCACHE=ON -DOPT_QT_MAJOR_VERSION=${COMMON_QT_VER} "$@"
 
 procs=$(nproc)
 if [ -n "${procs}" ]; then

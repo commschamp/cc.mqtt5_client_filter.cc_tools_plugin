@@ -32,7 +32,7 @@
 #include <memory>
 #include <string>
 
-static_assert(CC_MQTT5_CLIENT_MAKE_VERSION(0, 4, 0) <= CC_MQTT5_CLIENT_VERSION, "The version of the cc_mqtt5_client library is too old");
+static_assert(CC_MQTT5_CLIENT_MAKE_VERSION(0, 5, 0) <= CC_MQTT5_CLIENT_VERSION, "The version of the cc_mqtt5_client library is too old");
 static_assert(CC_TOOLS_QT_MAKE_VERSION(5, 2, 1) <= CC_TOOLS_QT_VERSION, "The version of the cc_tools_qt library is too old");
 
 namespace cc_plugin_mqtt5_client_filter
@@ -136,7 +136,7 @@ private:
     
 
     static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
-    static void brokerDisconnectedCb(void* data, const CC_Mqtt5DisconnectInfo* info);
+    static void brokerDisconnectedCb(void* data, CC_Mqtt5BrokerDisconnectReason reason, const CC_Mqtt5DisconnectInfo* info);
     static void messageReceivedCb(void* data, const CC_Mqtt5MessageInfo* info);
     static void nextTickProgramCb(void* data, unsigned ms);
     static unsigned cancelTickProgramCb(void* data);

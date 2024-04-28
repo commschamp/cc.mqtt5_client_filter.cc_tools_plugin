@@ -20,7 +20,7 @@ environment:
     COMMS_TAG: v5.2.3
     CC_TOOLS_QT_TAG: v5.2.1
     CC_MQTT5_GENERATED_TAG: v2.7
-    CC_MQTT5_LIBS_TAG: v0.4
+    CC_MQTT5_LIBS_TAG: v0.5
     matrix:
         - CPP_STD: 17
           QT_MAJOR: 5
