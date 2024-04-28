@@ -1134,7 +1134,10 @@ void Mqtt5ClientFilter::sendDataCb(void* data, const unsigned char* buf, unsigne
     asThis(data)->sendDataInternal(buf, bufLen);
 }
 
-void Mqtt5ClientFilter::brokerDisconnectedCb(void* data, [[maybe_unused]] const CC_Mqtt5DisconnectInfo* info)
+void Mqtt5ClientFilter::brokerDisconnectedCb(
+    void* data, 
+    [[maybe_unused]] CC_Mqtt5BrokerDisconnectReason reason, 
+    [[maybe_unused]] const CC_Mqtt5DisconnectInfo* info)
 {
     asThis(data)->brokerDisconnectedInternal();
 }
