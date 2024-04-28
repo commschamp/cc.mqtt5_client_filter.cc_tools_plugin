@@ -1,8 +1,8 @@
 # MQTT v5 Client Filter Plugin for the CommsChampion Tools
 This project is a member of the [CommsChampion Ecosystem](https://commschamp.github.io/) and implements
-**MQTT5 Filter** plugin for the [CommsChampion Tools](https://github.com/commschamp/cc_tools_qt). It
+**MQTT v5 Client Filter** plugin for the [CommsChampion Tools](https://github.com/commschamp/cc_tools_qt). It
 allows observation and debugging of the custom protocol messages exchanged using
-[MQTT5](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html) as the intermediate transport protocol in the common
+[MQTT v5](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html) as the intermediate transport protocol in the common
 environment of the [CommsChampion Tools](https://github.com/commschamp/cc_tools_qt).
 Please read the [wiki page](https://github.com/commschamp/cc.mqtt5_client_filter.cc_tools_plugin/wiki) for the instructions on
 how to configure and use the plugin.
@@ -14,8 +14,8 @@ This project uses [CMake](https://cmake.org/) as its build system. Please open t
 This project has the following direct and transitive external dependencies:
 
 - [COMMS Library](https://github.com/commschamp/comms) (**direct** dependency) - Primary library for any protocol definition, some inner cmake scripts are re-used in the build.
-- [cc.mqtt5.generated](https://github.com/commschamp/cc.mqtt5.generated) (**transitive** dependency) - Definition of the MQTT5 protocol (depends on the [COMMS Library](https://github.com/commschamp/comms)).
-- [cc.mqtt5.libs](https://github.com/commschamp/cc.mqtt5.generated) (**direct** dependency) - MQTT5 client library (depends on the
+- [cc.mqtt5.generated](https://github.com/commschamp/cc.mqtt5.generated) (**transitive** dependency) - Definition of the MQTT v5 protocol (depends on the [COMMS Library](https://github.com/commschamp/comms)).
+- [cc.mqtt5.libs](https://github.com/commschamp/cc.mqtt5.generated) (**direct** dependency) - MQTT v5 client library (depends on the
 [COMMS Library](https://github.com/commschamp/comms) and the [cc.mqtt5.generated](https://github.com/commschamp/cc.mqtt5.generated)).
 - [CommsChampion Tools](https://github.com/commschamp/cc.mqtt5.generated) (**direct** dependency) - CommsChampion Tools and its library required for the plugin development.
 - [Qt](https://www.qt.io/) (**direct** dependency) - Qt5/6 libraries.
