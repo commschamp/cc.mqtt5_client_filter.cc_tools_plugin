@@ -23,6 +23,7 @@
 #include <QtCore/QVariant>
 
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <limits>
 #include <iostream>
@@ -1164,7 +1165,10 @@ unsigned Mqtt5ClientFilter::cancelTickProgramCb(void* data)
 
 void Mqtt5ClientFilter::errorLogCb([[maybe_unused]] void* data, const char* msg)
 {
-    std::cerr << "MQTT5 ERROR: " << msg << std::endl;
+    auto timestamp = std::chrono::high_resolution_clock::now();
+    auto sinceEpoch = timestamp.time_since_epoch();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(sinceEpoch).count();
+    std::cerr << '[' << milliseconds << "] MQTT ERROR: " << msg << std::endl;
 }
 
 void Mqtt5ClientFilter::connectCompleteCb(void* data, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response)
