@@ -856,6 +856,11 @@ void Mqtt5ClientFilter::applyInterPluginConfigImpl(const QVariantMap& props)
     }
 }
 
+const char* Mqtt5ClientFilter::debugNameImpl() const
+{
+    return "mqtt v5 client filter";
+}
+
 void Mqtt5ClientFilter::doTick()
 {
     assert(m_tickMeasureTs > 0);
