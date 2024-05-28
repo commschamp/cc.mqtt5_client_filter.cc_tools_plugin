@@ -23,6 +23,7 @@
 #include <QtCore/QVariant>
 
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <limits>
 #include <iostream>
@@ -470,6 +471,9 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::recvDataImpl(cc_tools_qt::Dat
     m_recvDataPtr = std::move(dataPtr);
     m_inData.insert(m_inData.end(), m_recvDataPtr->m_data.begin(), m_recvDataPtr->m_data.end());
     auto consumed = ::cc_mqtt5_client_process_data(m_client.get(), m_inData.data(), static_cast<unsigned>(m_inData.size()));
+    if (3 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): consumed bytes: " << consumed << "/" << m_inData.size() << std::endl;
+    }    
     assert(consumed <= m_inData.size());
     m_inData.erase(m_inData.begin(), m_inData.begin() + consumed);
     m_recvDataPtr.reset();
@@ -499,6 +503,10 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
 
     auto retained = getOutgoingRetained(props);
     props[retainedProp()] = retained;
+
+    if (2 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): publish: " << topic << std::endl;
+    }     
 
     CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
     CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
@@ -855,6 +863,11 @@ void Mqtt5ClientFilter::applyInterPluginConfigImpl(const QVariantMap& props)
     }
 }
 
+const char* Mqtt5ClientFilter::debugNameImpl() const
+{
+    return "mqtt v5 client filter";
+}
+
 void Mqtt5ClientFilter::doTick()
 {
     assert(m_tickMeasureTs > 0);
@@ -870,6 +883,10 @@ void Mqtt5ClientFilter::doTick()
 
 void Mqtt5ClientFilter::socketConnected()
 {
+    if (2 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): socket connected report" << std::endl;
+    }
+
     auto basicConfig = CC_Mqtt5ConnectBasicConfig();
     ::cc_mqtt5_client_connect_init_config_basic(&basicConfig);
 
@@ -919,6 +936,10 @@ void Mqtt5ClientFilter::socketConnected()
 
 void Mqtt5ClientFilter::socketDisconnected()
 {
+    if (2 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): socket disconnected report" << std::endl;
+    }
+
     ::cc_mqtt5_client_notify_network_disconnected(m_client.get());
 }
 
@@ -944,6 +965,10 @@ void Mqtt5ClientFilter::registerTopicAliases()
 
 void Mqtt5ClientFilter::sendDataInternal(const unsigned char* buf, unsigned bufLen)
 {
+    if (3 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): sending " << bufLen << " bytes" << std::endl;
+    }
+
     auto dataInfo = cc_tools_qt::makeDataInfoTimed();
     dataInfo->m_data.assign(buf, buf + bufLen);
     if (!m_sendDataPtr) {
@@ -965,6 +990,10 @@ void Mqtt5ClientFilter::brokerDisconnectedInternal()
 
 void Mqtt5ClientFilter::messageReceivedInternal(const CC_Mqtt5MessageInfo& info)
 {
+    if (2 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): app message received: " << info.m_topic << std::endl;
+    }
+
     assert(m_recvDataPtr);
     auto dataInfo = cc_tools_qt::makeDataInfoTimed();
     if (info.m_dataLen > 0U) {
@@ -1018,6 +1047,10 @@ void Mqtt5ClientFilter::messageReceivedInternal(const CC_Mqtt5MessageInfo& info)
 
 void Mqtt5ClientFilter::nextTickProgramInternal(unsigned ms)
 {
+    if (3 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): tick request: " << ms << std::endl;
+    }
+
     assert(!m_timer.isActive());
     m_tickMs = ms;
     m_tickMeasureTs = QDateTime::currentMSecsSinceEpoch();
@@ -1034,6 +1067,10 @@ unsigned Mqtt5ClientFilter::cancelTickProgramInternal()
     auto diff = now - m_tickMeasureTs;
     assert(diff < std::numeric_limits<unsigned>::max());
     m_tickMeasureTs = 0U;
+
+    if (3 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): cancel tick: " << diff << std::endl;
+    }
     return static_cast<unsigned>(diff);
 }
 
@@ -1164,7 +1201,10 @@ unsigned Mqtt5ClientFilter::cancelTickProgramCb(void* data)
 
 void Mqtt5ClientFilter::errorLogCb([[maybe_unused]] void* data, const char* msg)
 {
-    std::cerr << "MQTT5 ERROR: " << msg << std::endl;
+    auto timestamp = std::chrono::high_resolution_clock::now();
+    auto sinceEpoch = timestamp.time_since_epoch();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(sinceEpoch).count();
+    std::cerr << '[' << milliseconds << "] MQTT ERROR: " << msg << std::endl;
 }
 
 void Mqtt5ClientFilter::connectCompleteCb(void* data, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response)
