@@ -504,6 +504,10 @@ QList<cc_tools_qt::DataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt::Dat
     auto retained = getOutgoingRetained(props);
     props[retainedProp()] = retained;
 
+    if (2 <= getDebugOutputLevel()) {
+        std::cout << '[' << currTimestamp() << "] (" << debugNameImpl() << "): publish: " << topic << std::endl;
+    }     
+
     CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
     CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
     if (publish == NULL) {
