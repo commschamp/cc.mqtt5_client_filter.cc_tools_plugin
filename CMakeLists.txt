@@ -3,7 +3,7 @@ project ("cc_tools_plugin_mqtt5_client_filter")
 
 # Available options
 option (OPT_WARN_AS_ERR "Treat warning as error" ON)
-option (OPT_USE_CCACHE "Use ccache on UNIX systems if it's available" OFF)
+option (OPT_USE_CCACHE "Use ccache if it's available" OFF)
 option (OPT_WITH_DEFAULT_SANITIZERS "Build with sanitizers" OFF)
 
 # Extra configuration variables
