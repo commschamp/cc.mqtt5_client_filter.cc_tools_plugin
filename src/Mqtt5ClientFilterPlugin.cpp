@@ -144,24 +144,9 @@ void getListFromConfigMap(const QVariantMap& subConfig, const QString& key, T& l
 } // namespace 
     
 
-Mqtt5ClientFilterPlugin::Mqtt5ClientFilterPlugin()
+Mqtt5ClientFilterPlugin::Mqtt5ClientFilterPlugin() :
+    Base(Type_Filter)
 {
-    pluginProperties()
-        .setFiltersCreateFunc(
-            [this]()
-            {
-                createFilterIfNeeded();
-                cc_tools_qt::PluginProperties::ListOfFilters result;
-                result.append(m_filter);
-                return result;
-            })
-        .setConfigWidgetCreateFunc(
-            [this]()
-            {
-                createFilterIfNeeded();
-                return new Mqtt5ClientFilterConfigWidget(*m_filter);
-            })            
-        ;
 }
 
 Mqtt5ClientFilterPlugin::~Mqtt5ClientFilterPlugin() noexcept = default;
@@ -221,6 +206,18 @@ void Mqtt5ClientFilterPlugin::applyInterPluginConfigImpl(const QVariantMap& prop
 {
     createFilterIfNeeded();
     m_filter->applyInterPluginConfig(props);
+}
+
+cc_tools_qt::ToolsFilterPtr Mqtt5ClientFilterPlugin::createFilterImpl()
+{
+    createFilterIfNeeded();
+    return m_filter;
+}
+
+QWidget* Mqtt5ClientFilterPlugin::createConfigurationWidgetImpl()
+{
+    createFilterIfNeeded();
+    return new Mqtt5ClientFilterConfigWidget(*m_filter);
 }
 
 void Mqtt5ClientFilterPlugin::createFilterIfNeeded()
