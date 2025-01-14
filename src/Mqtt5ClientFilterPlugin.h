@@ -20,16 +20,18 @@
 
 #include "Mqtt5ClientFilter.h"
 
-#include <cc_tools_qt/Plugin.h>
+#include <cc_tools_qt/ToolsPlugin.h>
 
 namespace cc_plugin_mqtt5_client_filter
 {
 
-class Mqtt5ClientFilterPlugin : public cc_tools_qt::Plugin
+class Mqtt5ClientFilterPlugin : public cc_tools_qt::ToolsPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "cc.Mqtt5ClientFilter" FILE "cc_plugin_mqtt5_client_filter.json")
-    Q_INTERFACES(cc_tools_qt::Plugin)
+    Q_INTERFACES(cc_tools_qt::ToolsPlugin)
+
+    using Base = cc_tools_qt::ToolsPlugin;
 
 public:
     Mqtt5ClientFilterPlugin();
@@ -39,6 +41,8 @@ protected:
     virtual void getCurrentConfigImpl(QVariantMap& config) override;
     virtual void reconfigureImpl(const QVariantMap& config) override;
     virtual void applyInterPluginConfigImpl(const QVariantMap& props) override;     
+    virtual cc_tools_qt::ToolsFilterPtr createFilterImpl() override;
+    virtual QWidget* createConfigurationWidgetImpl() override;
 
 private:
     void createFilterIfNeeded();
