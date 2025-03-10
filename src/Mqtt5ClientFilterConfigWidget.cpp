@@ -284,7 +284,8 @@ void Mqtt5ClientFilterConfigWidget::addSubscribeWidget(SubConfig& config)
         [this](QObject*)
         {
             refreshSubscribes();
-        });
+        },
+        Qt::QueuedConnection);
 
     auto* subsLayout = qobject_cast<QVBoxLayout*>(m_ui.m_subsWidget->layout());
     assert(subsLayout != nullptr);
@@ -306,7 +307,8 @@ void Mqtt5ClientFilterConfigWidget::addTopicAliasWidget(TopicAliasConfig& config
         [this](QObject*)
         {
             refreshTopicAliases();
-        });
+        },
+        Qt::QueuedConnection);
 
     auto* topicAliasesLayout = qobject_cast<QVBoxLayout*>(m_ui.m_topicAliaseWidget->layout());
     assert(topicAliasesLayout != nullptr);
