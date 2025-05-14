@@ -48,5 +48,6 @@
         "    { \"mqtt.qos\": 1 } - Alias to \"mqtt5.qos\".\n",
         "    { \"mqtt.retained\": true } - Alias to \"mqtt5.retained\".\n"
     ],
-    "type" : "filter"
+    "type" : "filter",
+    "version" : "v1.0.3"
 }

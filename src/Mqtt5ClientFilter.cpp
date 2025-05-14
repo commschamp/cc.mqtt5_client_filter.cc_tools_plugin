@@ -510,7 +510,7 @@ QList<cc_tools_qt::ToolsDataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt
 
     CC_Mqtt5ErrorCode ec = CC_Mqtt5ErrorCode_Success;
     CC_Mqtt5PublishHandle publish = ::cc_mqtt5_client_publish_prepare(m_client.get(), &ec);
-    if (publish == NULL) {
+    if (publish == nullptr) {
         reportError(tr("Publish allocation failed with error: ") + errorCodeStr(ec));
         return m_sendData;
     }
@@ -526,6 +526,7 @@ QList<cc_tools_qt::ToolsDataInfoPtr> Mqtt5ClientFilter::sendDataImpl(cc_tools_qt
     ec = ::cc_mqtt5_client_publish_config_basic(publish, &basicConfig);
     if (ec != CC_Mqtt5ErrorCode_Success) {
         reportError(tr("Failed to configure MQTT5 publish with error: ") + errorCodeStr(ec));
+        ::cc_mqtt5_client_publish_cancel(publish);
         return m_sendData;
     }    
 
