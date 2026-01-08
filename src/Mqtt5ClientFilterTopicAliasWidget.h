@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #pragma once
 
 #include "ui_Mqtt5ClientFilterTopicAliasWidget.h"
@@ -23,7 +22,6 @@
 #include "Mqtt5ClientFilter.h"
 
 #include <QtWidgets/QWidget>
-
 
 namespace cc_plugin_mqtt5_client_filter
 {
@@ -50,5 +48,4 @@ private:
 };
 
 }  // namespace cc_plugin_mqtt5_client_filter
-
 

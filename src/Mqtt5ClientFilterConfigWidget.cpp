@@ -27,7 +27,7 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
-namespace 
+namespace
 {
 
 void deleteAllWidgetsFrom(QLayout& layout)
@@ -43,8 +43,7 @@ void deleteAllWidgetsFrom(QLayout& layout)
     }
 }
 
-} // namespace 
-    
+} // namespace
 
 Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& filter, QWidget* parentObj) :
     Base(parentObj),
@@ -56,17 +55,17 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
     m_ui.m_subsWidget->setLayout(subsLayout);
 
     auto topicAliasesLayout = new QVBoxLayout;
-    m_ui.m_topicAliaseWidget->setLayout(topicAliasesLayout);    
+    m_ui.m_topicAliaseWidget->setLayout(topicAliasesLayout);
 
     refresh();
 
     connect(
         &m_filter, &Mqtt5ClientFilter::sigConfigChanged,
-        this, &Mqtt5ClientFilterConfigWidget::refresh);     
+        this, &Mqtt5ClientFilterConfigWidget::refresh);
 
     connect(
         m_ui.m_respTimeoutSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::respTimeoutUpdated);    
+        this, &Mqtt5ClientFilterConfigWidget::respTimeoutUpdated);
 
     connect(
         m_ui.m_clientIdLineEdit, &QLineEdit::textChanged,
@@ -74,61 +73,61 @@ Mqtt5ClientFilterConfigWidget::Mqtt5ClientFilterConfigWidget(Mqtt5ClientFilter& 
 
     connect(
         m_ui.m_usernameLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::usernameUpdated);        
+        this, &Mqtt5ClientFilterConfigWidget::usernameUpdated);
 
     connect(
         m_ui.m_passwordLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::passwordUpdated); 
+        this, &Mqtt5ClientFilterConfigWidget::passwordUpdated);
 
     connect(
         m_ui.m_passwordShowHidePushButton,  &QPushButton::clicked,
-        this, &Mqtt5ClientFilterConfigWidget::passwordShowHideClicked);               
+        this, &Mqtt5ClientFilterConfigWidget::passwordShowHideClicked);
 
     connect(
         m_ui.m_keepAliveSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::keepAliveUpdated);    
+        this, &Mqtt5ClientFilterConfigWidget::keepAliveUpdated);
 
     connect(
         m_ui.m_sessionExpiryIntervalSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::sessionExpiryUpdated);     
+        this, &Mqtt5ClientFilterConfigWidget::sessionExpiryUpdated);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 7, 0)
     connect(
         m_ui.m_sessionExpiryInfiniteCheckBox, &QCheckBox::stateChanged,
-        this, qOverload<int>(&Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated));             
+        this, qOverload<int>(&Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated));
 #else
     connect(
         m_ui.m_sessionExpiryInfiniteCheckBox, &QCheckBox::checkStateChanged,
-        this, qOverload<Qt::CheckState>(&Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated));                      
-#endif   
+        this, qOverload<Qt::CheckState>(&Mqtt5ClientFilterConfigWidget::sessionExpiryInfiniteUpdated));
+#endif
 
     connect(
         m_ui.m_topicAliasMaximumSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::topicAliasMaximumUpdated); 
+        this, &Mqtt5ClientFilterConfigWidget::topicAliasMaximumUpdated);
 
     connect(
         m_ui.m_cleanStartComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-        this, &Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated);           
+        this, &Mqtt5ClientFilterConfigWidget::forcedCleanStartUpdated);
 
     connect(
         m_ui.m_pubTopicLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::pubTopicUpdated);        
+        this, &Mqtt5ClientFilterConfigWidget::pubTopicUpdated);
 
     connect(
         m_ui.m_pubQosSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterConfigWidget::pubQosUpdated);   
+        this, &Mqtt5ClientFilterConfigWidget::pubQosUpdated);
 
     connect(
         m_ui.m_respTopicLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);   
+        this, &Mqtt5ClientFilterConfigWidget::respTopicUpdated);
 
     connect(
         m_ui.m_addSubPushButton, &QPushButton::clicked,
-        this, &Mqtt5ClientFilterConfigWidget::addSubscribe);           
+        this, &Mqtt5ClientFilterConfigWidget::addSubscribe);
 
     connect(
         m_ui.m_addTopicAliasPushButton, &QPushButton::clicked,
-        this, &Mqtt5ClientFilterConfigWidget::addTopicAlias);                     
+        this, &Mqtt5ClientFilterConfigWidget::addTopicAlias);
 }
 
 Mqtt5ClientFilterConfigWidget::~Mqtt5ClientFilterConfigWidget() noexcept = default;
@@ -140,7 +139,7 @@ void Mqtt5ClientFilterConfigWidget::refresh()
 
     for (auto& subConfig : m_filter.config().m_subscribes) {
         addSubscribeWidget(subConfig);
-    }    
+    }
 
     for (auto& aliasConfig : m_filter.config().m_topicAliases) {
         addTopicAliasWidget(aliasConfig);
@@ -196,9 +195,9 @@ void Mqtt5ClientFilterConfigWidget::passwordShowHideClicked(bool checked)
         mode = QLineEdit::Normal;
         buttonText = tr("Hide");
     }
-    
+
     m_ui.m_passwordLineEdit->setEchoMode(mode);
-    m_ui.m_passwordShowHidePushButton->setText(buttonText);    
+    m_ui.m_passwordShowHidePushButton->setText(buttonText);
 }
 
 void Mqtt5ClientFilterConfigWidget::keepAliveUpdated(int val)
@@ -289,7 +288,7 @@ void Mqtt5ClientFilterConfigWidget::addSubscribeWidget(SubConfig& config)
 
     auto* subsLayout = qobject_cast<QVBoxLayout*>(m_ui.m_subsWidget->layout());
     assert(subsLayout != nullptr);
-    subsLayout->addWidget(widget); 
+    subsLayout->addWidget(widget);
 }
 
 void Mqtt5ClientFilterConfigWidget::refreshTopicAliases()
@@ -312,9 +311,8 @@ void Mqtt5ClientFilterConfigWidget::addTopicAliasWidget(TopicAliasConfig& config
 
     auto* topicAliasesLayout = qobject_cast<QVBoxLayout*>(m_ui.m_topicAliaseWidget->layout());
     assert(topicAliasesLayout != nullptr);
-    topicAliasesLayout->addWidget(aliasWidget);    
+    topicAliasesLayout->addWidget(aliasWidget);
 }
 
 }  // namespace cc_plugin_mqtt5_client_filter
-
 
