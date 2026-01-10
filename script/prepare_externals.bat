@@ -8,6 +8,7 @@ rem COMMS_REPO - (Optional) Repository of the COMMS library
 rem COMMS_TAG - (Optional) Tag of the COMMS library
 rem CC_TOOLS_QT_REPO - (Optional) Repository of the cc_tools_qt
 rem CC_TOOLS_QT_TAG - (Optional) Tag of the cc_tools_qt
+rem CC_TOOLS_QT_MAJOR_QT_VERSION - (Optional) Major version of the Qt library
 rem CC_MQTT5_GENERATED_REPO - (Optional) Repository of the cc.mqtt5.generated
 rem CC_MQTT5_GENERATED_TAG - (Optional) Tag of the cc.mqtt5.generated
 rem CC_MQTT5_LIBS_REPO - (Optional) Repository of the cc.mqtt5.libs
@@ -58,6 +59,8 @@ set CC_TOOLS_QT_SRC_DIR=%EXTERNALS_DIR%/cc_tools_qt
 set CC_TOOLS_QT_BUILD_DIR=%BUILD_DIR%/externals/cc_tools_qt/build
 set CC_TOOLS_QT_INSTALL_DIR=%CC_TOOLS_QT_BUILD_DIR%/install
 if NOT [%COMMON_INSTALL_DIR%] == [] set CC_TOOLS_QT_INSTALL_DIR=%COMMON_INSTALL_DIR%
+set CC_TOOLS_QT_VERSION_OPT=
+if NOT [%CC_TOOLS_QT_MAJOR_QT_VERSION%] == [] set CC_TOOLS_QT_VERSION_OPT="-DCC_TOOLS_QT_MAJOR_QT_VERSION=%CC_TOOLS_QT_MAJOR_QT_VERSION%"
 
 set CC_MQTT5_GENERATED_SRC_DIR=%EXTERNALS_DIR%/cc.mqtt5.generated
 set CC_MQTT5_GENERATED_BUILD_DIR=%BUILD_DIR%/externals/cc.mqtt5.generated/build
