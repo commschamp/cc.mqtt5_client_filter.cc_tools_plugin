@@ -20,7 +20,7 @@ This project has the following direct and transitive external dependencies:
 
 - [COMMS Library](https://github.com/commschamp/comms) (**direct** dependency) - Primary library for any protocol definition, some inner cmake scripts are re-used in the build.
 - [cc.mqtt5.generated](https://github.com/commschamp/cc.mqtt5.generated) (**transitive** dependency) - Definition of the MQTT v5 protocol (depends on the [COMMS Library](https://github.com/commschamp/comms)).
-- [cc.mqtt5.libs](https://github.com/commschamp/cc.mqtt5.generated) (**direct** dependency) - MQTT v5 client library (depends on the
+- [cc.mqtt5.libs](https://github.com/commschamp/cc.mqtt5.libs) (**direct** dependency) - MQTT v5 client library (depends on the
 [COMMS Library](https://github.com/commschamp/comms) and the [cc.mqtt5.generated](https://github.com/commschamp/cc.mqtt5.generated)).
 - [CommsChampion Tools](https://github.com/commschamp/cc.mqtt5.generated) (**direct** dependency) - CommsChampion Tools and its library required for the plugin development.
 - [Qt](https://www.qt.io/) (**direct** dependency) - Qt5/6 libraries.
