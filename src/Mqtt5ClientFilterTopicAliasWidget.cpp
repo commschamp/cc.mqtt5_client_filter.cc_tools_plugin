@@ -1,5 +1,5 @@
 //
-// Copyright 2024 - 2025 (C). Alex Robenko. All rights reserved.
+// Copyright 2024 - 2026 (C). Alex Robenko. All rights reserved.
 //
 
 // This file is free software: you can redistribute it and/or modify
@@ -15,16 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include "Mqtt5ClientFilterTopicAliasWidget.h"
 
 #include <algorithm>
 
-
 namespace cc_plugin_mqtt5_client_filter
 {
 
-Mqtt5ClientFilterTopicAliasWidget::Mqtt5ClientFilterTopicAliasWidget(Mqtt5ClientFilter& filter, TopicAliasConfig& config, QWidget* parentObj) : 
+Mqtt5ClientFilterTopicAliasWidget::Mqtt5ClientFilterTopicAliasWidget(Mqtt5ClientFilter& filter, TopicAliasConfig& config, QWidget* parentObj) :
     Base(parentObj),
     m_filter(filter),
     m_config(config)
@@ -35,11 +33,11 @@ Mqtt5ClientFilterTopicAliasWidget::Mqtt5ClientFilterTopicAliasWidget(Mqtt5Client
 
     connect(
         m_ui.m_topicAliasLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterTopicAliasWidget::topicAliasUpdated);   
+        this, &Mqtt5ClientFilterTopicAliasWidget::topicAliasUpdated);
 
     connect(
         m_ui.m_delToolButton, &QToolButton::clicked,
-        this, &Mqtt5ClientFilterTopicAliasWidget::delClicked);           
+        this, &Mqtt5ClientFilterTopicAliasWidget::delClicked);
 }
 
 void Mqtt5ClientFilterTopicAliasWidget::topicAliasUpdated(const QString& val)
@@ -50,9 +48,9 @@ void Mqtt5ClientFilterTopicAliasWidget::topicAliasUpdated(const QString& val)
 void Mqtt5ClientFilterTopicAliasWidget::delClicked([[maybe_unused]] bool checked)
 {
     auto& aliases = m_filter.config().m_topicAliases;
-    auto iter = 
+    auto iter =
         std::find_if(
-            aliases.begin(), aliases.end(), 
+            aliases.begin(), aliases.end(),
             [this](auto& info)
             {
                 return &m_config == &info;
@@ -68,7 +66,5 @@ void Mqtt5ClientFilterTopicAliasWidget::delClicked([[maybe_unused]] bool checked
     deleteLater();
 }
 
-
 }  // namespace cc_plugin_mqtt5_client_filter
-
 

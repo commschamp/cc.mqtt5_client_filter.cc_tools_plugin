@@ -1,5 +1,5 @@
 //
-// Copyright 2024 - 2025 (C). Alex Robenko. All rights reserved.
+// Copyright 2024 - 2026 (C). Alex Robenko. All rights reserved.
 //
 
 // This file is free software: you can redistribute it and/or modify
@@ -14,7 +14,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 
 #pragma once
 
@@ -32,8 +31,8 @@
 #include <memory>
 #include <string>
 
-static_assert(CC_MQTT5_CLIENT_MAKE_VERSION(1, 0, 6) <= CC_MQTT5_CLIENT_VERSION, "The version of the cc_mqtt5_client library is too old");
-static_assert(CC_TOOLS_QT_MAKE_VERSION(6, 0, 2) <= CC_TOOLS_QT_VERSION, "The version of the cc_tools_qt library is too old");
+static_assert(CC_MQTT5_CLIENT_MAKE_VERSION(1, 0, 7) <= CC_MQTT5_CLIENT_VERSION, "The version of the cc_mqtt5_client library is too old");
+static_assert(CC_TOOLS_QT_MAKE_VERSION(6, 0, 6) <= CC_TOOLS_QT_VERSION, "The version of the cc_tools_qt library is too old");
 
 namespace cc_plugin_mqtt5_client_filter
 {
@@ -53,7 +52,7 @@ public:
     };
 
     // erase the element mustn't invalidate references to other elements, using list.
-    using SubConfigsList = std::list<SubConfig>; 
+    using SubConfigsList = std::list<SubConfig>;
 
     struct TopicAliasConfig
     {
@@ -62,14 +61,14 @@ public:
     };
 
     // erase the element mustn't invalidate references to other elements, using list.
-    using TopicAliasConfigsList = std::list<TopicAliasConfig>; 
+    using TopicAliasConfigsList = std::list<TopicAliasConfig>;
 
     struct Config
     {
         unsigned m_respTimeout = 0U;
         QString m_clientId;
-        QString m_username; 
-        QString m_password; 
+        QString m_username;
+        QString m_password;
         QString m_pubTopic;
         QString m_respTopic;
         int m_pubQos = 0;
@@ -96,7 +95,7 @@ public:
     }
 
 signals:
-    void sigConfigChanged();    
+    void sigConfigChanged();
 
 protected:
     virtual bool startImpl() override;
@@ -104,7 +103,7 @@ protected:
     virtual QList<cc_tools_qt::ToolsDataInfoPtr> recvDataImpl(cc_tools_qt::ToolsDataInfoPtr dataPtr) override;
     virtual QList<cc_tools_qt::ToolsDataInfoPtr> sendDataImpl(cc_tools_qt::ToolsDataInfoPtr dataPtr) override;
     virtual void socketConnectionReportImpl(bool connected) override;
-    virtual void applyInterPluginConfigImpl(const QVariantMap& props) override;     
+    virtual void applyInterPluginConfigImpl(const QVariantMap& props) override;
     virtual const char* debugNameImpl() const override;
 
 private slots:
@@ -118,7 +117,7 @@ private:
             ::cc_mqtt5_client_free(ptr);
         }
     };
-    
+
     using ClientPtr = std::unique_ptr<CC_Mqtt5Client, ClientDeleter>;
 
     void socketConnected();
@@ -134,7 +133,6 @@ private:
     void connectCompleteInternal(CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5ConnectResponse* response);
     void subscribeCompleteInternal(CC_Mqtt5SubscribeHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5SubscribeResponse* response);
     void publishCompleteInternal(CC_Mqtt5PublishHandle handle, CC_Mqtt5AsyncOpStatus status, const CC_Mqtt5PublishResponse* response);
-    
 
     static void sendDataCb(void* data, const unsigned char* buf, unsigned bufLen);
     static void brokerDisconnectedCb(void* data, CC_Mqtt5BrokerDisconnectReason reason, const CC_Mqtt5DisconnectInfo* info);
@@ -171,5 +169,4 @@ Mqtt5ClientFilterPtr makeMqtt5ClientFilter()
 }
 
 }  // namespace cc_plugin_mqtt5_client_filter
-
 

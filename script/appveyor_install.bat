@@ -34,7 +34,7 @@ IF "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" (
         echo Performing amd64 build in VS2022
         call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PLATFORM=x64
-    )  
+    )
 ) ELSE (
     echo Toolchain %TOOLCHAIN% is not supported
     exit -1

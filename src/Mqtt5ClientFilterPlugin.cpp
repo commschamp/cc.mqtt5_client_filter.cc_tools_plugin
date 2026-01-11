@@ -1,5 +1,5 @@
 //
-// Copyright 2024 - 2025 (C). Alex Robenko. All rights reserved.
+// Copyright 2024 - 2026 (C). Alex Robenko. All rights reserved.
 //
 
 // This file is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
-namespace 
+namespace
 {
 
 const QString MainConfigKey("cc_plugin_mqtt5_client_filter");
@@ -53,7 +53,6 @@ const QString SubRetainAsPublishedKey("sub_retain_as_published");
 const QString SubRetainHandlingKey("sub_retain_handling");
 const QString SubscribesSubKey("subscribes");
 
-
 template <typename T>
 void getFromConfigMap(const QVariantMap& subConfig, const QString& key, T& val)
 {
@@ -61,7 +60,7 @@ void getFromConfigMap(const QVariantMap& subConfig, const QString& key, T& val)
     auto var = subConfig.value(key);
     if (var.isValid() && var.canConvert<Type>()) {
         val = var.value<Type>();
-    }    
+    }
 }
 
 QVariantMap toVariantMap(const Mqtt5ClientFilter::SubConfig& config)
@@ -107,7 +106,6 @@ void fromVariantMap(const QVariantMap& map, Mqtt5ClientFilter::TopicAliasConfig&
     getFromConfigMap(map, AliasTopicQos0RegsSubKey, config.m_qos0Rep);
 }
 
-
 QVariantList toVariantList(const Mqtt5ClientFilter::TopicAliasConfigsList& configsList)
 {
     QVariantList result;
@@ -125,14 +123,14 @@ void getListFromConfigMap(const QVariantMap& subConfig, const QString& key, T& l
     auto var = subConfig.value(key);
     if ((!var.isValid()) || (!var.canConvert<QVariantList>())) {
         return;
-    }    
+    }
 
     auto varList = var.value<QVariantList>();
     for (auto& elemVar : varList) {
 
         if ((!elemVar.isValid()) || (!elemVar.canConvert<QVariantMap>())) {
             return;
-        }            
+        }
 
         auto varMap = elemVar.value<QVariantMap>();
 
@@ -141,8 +139,7 @@ void getListFromConfigMap(const QVariantMap& subConfig, const QString& key, T& l
     }
 }
 
-} // namespace 
-    
+} // namespace
 
 Mqtt5ClientFilterPlugin::Mqtt5ClientFilterPlugin() :
     Base(Type_Filter)
@@ -230,5 +227,4 @@ void Mqtt5ClientFilterPlugin::createFilterIfNeeded()
 }
 
 }  // namespace cc_plugin_mqtt5_client_filter
-
 

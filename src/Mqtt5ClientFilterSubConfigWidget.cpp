@@ -1,5 +1,5 @@
 //
-// Copyright 2024 - 2025 (C). Alex Robenko. All rights reserved.
+// Copyright 2024 - 2026 (C). Alex Robenko. All rights reserved.
 //
 
 // This file is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include "Mqtt5ClientFilterSubConfigWidget.h"
 
 #include <algorithm>
@@ -23,7 +22,7 @@
 namespace cc_plugin_mqtt5_client_filter
 {
 
-Mqtt5ClientFilterSubConfigWidget::Mqtt5ClientFilterSubConfigWidget(Mqtt5ClientFilter& filter, SubConfig& config, QWidget* parentObj) : 
+Mqtt5ClientFilterSubConfigWidget::Mqtt5ClientFilterSubConfigWidget(Mqtt5ClientFilter& filter, SubConfig& config, QWidget* parentObj) :
     Base(parentObj),
     m_filter(filter),
     m_config(config)
@@ -38,27 +37,27 @@ Mqtt5ClientFilterSubConfigWidget::Mqtt5ClientFilterSubConfigWidget(Mqtt5ClientFi
 
     connect(
         m_ui.m_topicLineEdit, &QLineEdit::textChanged,
-        this, &Mqtt5ClientFilterSubConfigWidget::topicUpdated);   
+        this, &Mqtt5ClientFilterSubConfigWidget::topicUpdated);
 
     connect(
         m_ui.m_maxQosSpinBox, qOverload<int>(&QSpinBox::valueChanged),
-        this, &Mqtt5ClientFilterSubConfigWidget::maxQosUpdated);  
+        this, &Mqtt5ClientFilterSubConfigWidget::maxQosUpdated);
 
     connect(
         m_ui.m_noLocalComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-        this, &Mqtt5ClientFilterSubConfigWidget::noLocalUpdated);   
+        this, &Mqtt5ClientFilterSubConfigWidget::noLocalUpdated);
 
     connect(
         m_ui.m_retainAsPublishedComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-        this, &Mqtt5ClientFilterSubConfigWidget::retainAsPublishedUpdated);    
+        this, &Mqtt5ClientFilterSubConfigWidget::retainAsPublishedUpdated);
 
     connect(
         m_ui.m_retainHandlingComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
-        this, &Mqtt5ClientFilterSubConfigWidget::retainHandlingUpdated);                            
+        this, &Mqtt5ClientFilterSubConfigWidget::retainHandlingUpdated);
 
     connect(
         m_ui.m_delToolButton, &QToolButton::clicked,
-        this, &Mqtt5ClientFilterSubConfigWidget::delClicked);           
+        this, &Mqtt5ClientFilterSubConfigWidget::delClicked);
 }
 
 void Mqtt5ClientFilterSubConfigWidget::topicUpdated(const QString& val)
@@ -94,9 +93,9 @@ void Mqtt5ClientFilterSubConfigWidget::retainHandlingUpdated(int val)
 void Mqtt5ClientFilterSubConfigWidget::delClicked([[maybe_unused]] bool checked)
 {
     auto& subs = m_filter.config().m_subscribes;
-    auto iter = 
+    auto iter =
         std::find_if(
-            subs.begin(), subs.end(), 
+            subs.begin(), subs.end(),
             [this](auto& info)
             {
                 return &m_config == &info;
@@ -113,7 +112,5 @@ void Mqtt5ClientFilterSubConfigWidget::delClicked([[maybe_unused]] bool checked)
     deleteLater();
 }
 
-
 }  // namespace cc_plugin_mqtt5_client_filter
-
 
