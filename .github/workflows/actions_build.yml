@@ -273,6 +273,11 @@ jobs:
         arch: [x64]
         cpp: [17, 20, 23]
         qt_ver: [5, 6]
+        exclude:
+          - cpp: 20
+            qt_ver: 5
+          - cpp: 23
+            qt_ver: 5            
 
     steps:
     - uses: actions/checkout@v4
