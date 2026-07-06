@@ -271,7 +271,7 @@ jobs:
       matrix:
         type: [Debug, Release]
         arch: [x64]
-        cpp: [17]
+        cpp: [17, 20, 23]
         qt_ver: [5, 6]
 
     steps:
